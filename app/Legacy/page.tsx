@@ -19,7 +19,7 @@ export default function LegacyPage() {
     },
     {
       id: 2,
-      image: "/486664461_1181399783676787_2142824188662298536_n.jpg", // Replace with your actual image path
+      image: "/20251018_003312.jpg", // Replace with your actual image path
       title: "Why is Dig The Data?",
       description: [
         "“Dig The Data” makes learning engaging and interactive by transforming traditional education into a fun, game-based experience. It strengthens logical and analytical thinking while encouraging teamwork and communication as teams collaborate and strategize to solve challenges. "
