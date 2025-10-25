@@ -6,7 +6,7 @@ export default function LegacyPage() {
   const legacyCards = [
     {
       id: 1,
-      image: "/20251018_014712.png", // Replace with your actual image path
+      image: "/Gray Minimalist Photo Collage Woman Model Instagram  Post.png", // Replace with your actual image path
       title: "What is Dig The Data?",
       description: [
         "A thrilling mix of puzzles, quizzes, and brain games.",
