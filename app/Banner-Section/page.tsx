@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import Link from "next/link";
+import Image from "next/image";
+import { useState, useEffect } from "react";
 
 export default function BannerSection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -15,7 +15,7 @@ export default function BannerSection() {
     <section className="relative py-20 overflow-hidden">
       {/* Modern Background with Gradients */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900/50 to-slate-900"></div>
-      
+
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse"></div>
@@ -30,9 +30,11 @@ export default function BannerSection() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
-        <div className={`text-center mb-16 transition-all duration-1000 ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-        }`}>
+        <div
+          className={`text-center mb-16 transition-all duration-1000 ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
           <div className="flex items-center justify-center gap-4 mb-8">
             <div className="relative group">
               <Image
@@ -54,9 +56,11 @@ export default function BannerSection() {
         </div>
 
         {/* Main Banner Card */}
-        <div className={`transition-all duration-1000 delay-300 ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-        }`}>
+        <div
+          className={`transition-all duration-1000 delay-300 ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+          }`}
+        >
           <div className="modern-card overflow-hidden">
             <div className="grid lg:grid-cols-2 gap-0">
               {/* Left Side - Logo/Image */}
@@ -87,7 +91,9 @@ export default function BannerSection() {
                     Dig The Data
                   </h1>
                   <div className="flex items-center gap-4">
-                    <span className="text-3xl md:text-4xl font-bold text-white">4.0</span>
+                    <span className="text-3xl md:text-4xl font-bold text-white">
+                      4.0
+                    </span>
                     <div className="h-1 flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
                   </div>
                 </div>
@@ -95,55 +101,99 @@ export default function BannerSection() {
                 {/* Description */}
                 <div className="space-y-4 mb-10">
                   <p className="text-gray-300 text-lg md:text-xl leading-relaxed">
-                    Organized by <span className="text-cyan-400 font-semibold">NCC (NITER Computer Club)</span>, 
-                    an exclusive event for the <span className="text-blue-400 font-semibold">NITER 15th batch</span>.
+                    Organized by{" "}
+                    <span className="text-cyan-400 font-semibold">
+                      NCC (NITER Computer Club)
+                    </span>
+                    , an exclusive event for the{" "}
+                    <span className="text-blue-400 font-semibold">
+                      NITER 15th batch
+                    </span>
+                    .
                   </p>
                   <p className="text-gray-300 text-lg md:text-xl leading-relaxed">
-                    This time, we bring you an event with a twist 
-                    <span className="text-cyan-400 font-semibold"> unlike never seen before</span>.
+                    This time, we bring you an event with a twist
+                    <span className="text-cyan-400 font-semibold">
+                      {" "}
+                      unlike never seen before
+                    </span>
+                    .
                   </p>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center sm:justify-start items-stretch sm:items-center">
                   <a
-                    href="/Dig The Data 4.0 Rulebook.pdf"
+                    href="/Rulebook of DTD 4.0.pdf"
                     download="Dig The Data 4.0 Rulebook.pdf"
-                    className="btn-primary px-8 py-4 text-white text-lg font-bold rounded-2xl min-w-[180px] text-center group relative overflow-hidden"
+                    className="btn-primary px-6 sm:px-8 py-3 sm:py-4 text-white text-base sm:text-lg font-bold rounded-2xl min-w-[160px] sm:min-w-[180px] lg:min-w-[200px] text-center group relative overflow-hidden transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-cyan-500/50 active:scale-95"
                   >
                     <span className="relative z-10 flex items-center justify-center gap-2">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      <svg
+                        className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 group-hover:rotate-12"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
                       </svg>
-                      Rules Book
+                      <span className="whitespace-nowrap">Rules Book</span>
                     </span>
+                    {/* Hover effect overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
                   </a>
 
-                  <Link
-                    href="/register"
-                    className="btn-secondary px-8 py-4 text-lg font-bold rounded-2xl min-w-[180px] text-center group relative overflow-hidden"
+                  <a
+                    href="/Registration Book of DTD 4.0 Final.pdf"
+                    download="Dig The Data 4.0 Registration Rules.pdf"
+                    className="btn-primary px-6 sm:px-8 py-3 sm:py-4 text-white text-base sm:text-lg font-bold rounded-2xl min-w-[160px] sm:min-w-[180px] lg:min-w-[200px] text-center group relative overflow-hidden transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-cyan-500/50 active:scale-95"
                   >
                     <span className="relative z-10 flex items-center justify-center gap-2">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                      <svg
+                        className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 group-hover:rotate-12"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
                       </svg>
-                      Register Now
+                      <span className="whitespace-nowrap">Registration Rules</span>
                     </span>
-                  </Link>
+                    {/* Hover effect overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
+                  </a>
                 </div>
 
                 {/* Event Stats */}
                 <div className="grid grid-cols-3 gap-4 mt-12 pt-8 border-t border-gray-700/50">
                   <div className="text-center">
-                    <div className="text-2xl font-bold gradient-text mb-1">4.0</div>
+                    <div className="text-2xl font-bold gradient-text mb-1">
+                      4.0
+                    </div>
                     <p className="text-gray-400 text-sm">Edition</p>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold gradient-text mb-1">15th</div>
+                    <div className="text-2xl font-bold gradient-text mb-1">
+                      15th
+                    </div>
                     <p className="text-gray-400 text-sm">Batch</p>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold gradient-text mb-1">NCC</div>
+                    <div className="text-2xl font-bold gradient-text mb-1">
+                      NCC
+                    </div>
                     <p className="text-gray-400 text-sm">Organizer</p>
                   </div>
                 </div>
@@ -153,9 +203,11 @@ export default function BannerSection() {
         </div>
 
         {/* CTA Buttons */}
-        <div className={`mt-16 transition-all duration-1000 delay-600 ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-        }`}>
+        <div
+          className={`mt-16 transition-all duration-1000 delay-600 ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
             <Link
               href="/register"
@@ -173,9 +225,11 @@ export default function BannerSection() {
         </div>
 
         {/* Stats or Info Cards */}
-        <div className={`mt-16 transition-all duration-1000 delay-700 ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-        }`}>
+        <div
+          className={`mt-16 transition-all duration-1000 delay-700 ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-16 max-w-4xl mx-auto">
             <div className="modern-card p-6 text-center">
               <div className="text-3xl font-bold gradient-text mb-2">4.0</div>
@@ -193,14 +247,14 @@ export default function BannerSection() {
         </div>
 
         {/* Floating Action Elements */}
-        <div className={`mt-16 text-center transition-all duration-1000 delay-800 ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-        }`}>
+        <div
+          className={`mt-16 text-center transition-all duration-1000 delay-800 ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
           <div className="inline-flex items-center gap-4 modern-card px-8 py-4">
             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-gray-300 font-medium">Registration Open</span>
-           
-           
           </div>
         </div>
       </div>

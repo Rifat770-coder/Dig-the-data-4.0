@@ -308,7 +308,7 @@ export default function RegisterPage() {
 
   return (
     <div 
-      className="min-h-screen relative flex items-center justify-center p-4" 
+      className="min-h-screen relative flex items-center justify-center p-2 sm:p-4 md:p-6" 
       style={{
         backgroundImage: "url('/background.png')",
         backgroundSize: "cover",
@@ -321,7 +321,7 @@ export default function RegisterPage() {
       {/* Background Overlay for better readability */}
       <div className="absolute inset-0 bg-black/50 z-0"></div>
       
-      <div className="relative z-10 bg-gray-900/90 backdrop-blur-xl border border-cyan-500/30 rounded-2xl shadow-2xl shadow-cyan-500/20 p-8 w-full max-w-md">
+      <div className="relative z-10 bg-gray-900/90 backdrop-blur-xl border border-cyan-500/30 rounded-2xl shadow-2xl shadow-cyan-500/20 p-4 sm:p-6 md:p-8 w-full max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl">
         {/* Back Button */}
         <Link 
           href="/"
@@ -338,16 +338,16 @@ export default function RegisterPage() {
           <span className="font-medium">Back to Home</span>
         </Link>
 
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-2">Registration</h1>
-          <p className="text-gray-300">Fill in your details to register</p>
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-2">Registration</h1>
+          <p className="text-sm sm:text-base text-gray-300">Fill in your details to register</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5" suppressHydrationWarning={true}>
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5" suppressHydrationWarning={true}>
           {/* Profile Picture Upload */}
           <div>
             <label className="block text-sm font-medium text-cyan-300 mb-2">
-              Profile Picture (Optional)
+              Profile Picture
             </label>
             <div className="flex items-center gap-4">
               {/* Preview or Upload Area */}
@@ -415,7 +415,7 @@ export default function RegisterPage() {
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400 text-sm sm:text-base"
               placeholder="Enter your full name"
             />
           </div>
@@ -431,7 +431,7 @@ export default function RegisterPage() {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400 text-sm sm:text-base"
               placeholder="your.email@example.com"
             />
           </div>
@@ -447,7 +447,7 @@ export default function RegisterPage() {
               value={formData.id}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400 text-sm sm:text-base"
               placeholder="Enter your ID"
             />
           </div>
@@ -462,7 +462,7 @@ export default function RegisterPage() {
               value={formData.department}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm sm:text-base"
             >
               <option value="" className="bg-gray-700">Select Department</option>
               <option value="Computer Science & Engineering (CSE)" className="bg-gray-700">Computer Science & Engineering (CSE)</option>
@@ -485,7 +485,7 @@ export default function RegisterPage() {
               value={formData.Phone}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400 text-sm sm:text-base"
               placeholder="01XXXXXXXXX"
             />
           </div>
@@ -537,6 +537,17 @@ export default function RegisterPage() {
                   </svg>
                   <span>Upload Screenshot</span>
                 </label>
+                <div className="mb-3">
+                  <span className="text-sm font-medium text-cyan-300 block mb-2">bKash Numbers</span>
+                  <ul className="text-xs text-gray-300 space-y-1">
+                    <li>1. 01744368707</li>
+                    <li>2. 01630904798</li>
+                    <li>3. 01882038517</li>
+                    <li>4. 01798506446</li>
+                    <li>5. 01570292546</li>
+                  </ul>
+                </div>
+                
                 <input
                   type="file"
                   id="bkashReceipt"
@@ -568,7 +579,7 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 required
                 minLength={8}
-                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400 pr-12"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400 pr-12 text-sm sm:text-base"
                 placeholder="Create a password (min 8 characters)"
               />
               <button
@@ -603,7 +614,7 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 required
                 minLength={8}
-                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400 pr-12"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400 pr-12 text-sm sm:text-base"
                 placeholder="Confirm your password"
               />
               <button
@@ -640,7 +651,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading || uploadingImage}
-            className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-3 rounded-lg font-semibold hover:from-cyan-400 hover:to-blue-400 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-cyan-500/25 border border-cyan-500/30"
+            className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-2 sm:py-3 rounded-lg font-semibold hover:from-cyan-400 hover:to-blue-400 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-cyan-500/25 border border-cyan-500/30 text-sm sm:text-base"
           >
             {loading ? 'Registering...' : uploadingImage ? 'Uploading Image...' : 'Register'}
           </button>

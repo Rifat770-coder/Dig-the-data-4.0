@@ -119,39 +119,64 @@ export default function Footer() {
           
           {/* Brand Section */}
           <div className="lg:col-span-2">
-            <div className="flex flex-col sm:flex-row items-start gap-6 mb-8">
-              {/* NCC Logo */}
-              <div className="relative group">
-                <Image
-                  src="/ncc logo new    ncc.png"
-                  alt="NITER Computer Club"
-                  width={100}
-                  height={100}
-                  className="rounded-2xl shadow-lg transition-transform duration-300 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            {/* Mobile-Optimized Logo Section */}
+            <div className="flex flex-col items-center sm:items-start gap-6 mb-8">
+              {/* Logo Container - Side by side on mobile */}
+              <div className="flex flex-row items-center justify-center sm:justify-start gap-4 sm:gap-6 w-full">
+                {/* NCC Logo - Clickable Link */}
+                 <Link
+                   href="https://www.niter.edu.bd"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="logo-link relative group focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-slate-900 rounded-2xl transition-all duration-300"
+                   aria-label="Visit NITER Computer Club website"
+                 >
+                   <div className="relative">
+                     <Image
+                       src="/ncc logo new    ncc.png"
+                       alt="NITER Computer Club - Official website link"
+                       width={80}
+                       height={80}
+                       className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-105 group-focus:scale-105 object-cover"
+                       priority
+                     />
+                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300"></div>
+                     {/* Touch-friendly overlay for mobile */}
+                     <div className="absolute inset-0 rounded-2xl bg-transparent group-active:bg-cyan-500/10 transition-colors duration-150"></div>
+                   </div>
+                 </Link>
+
+                 {/* Dig The Data Logo - Clickable Link */}
+                 <Link
+                   href="/"
+                   className="logo-link relative group focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-slate-900 rounded-2xl transition-all duration-300"
+                   aria-label="Go to Dig The Data 4.0 homepage"
+                 >
+                   <div className="relative">
+                     <Image
+                       src="/20251018_003312.jpg"
+                       alt="Dig The Data 4.0 - Competition homepage link"
+                       width={80}
+                       height={80}
+                       className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-105 group-focus:scale-105 object-cover"
+                       priority
+                     />
+                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300"></div>
+                     {/* Touch-friendly overlay for mobile */}
+                     <div className="absolute inset-0 rounded-2xl bg-transparent group-active:bg-cyan-500/10 transition-colors duration-150"></div>
+                   </div>
+                 </Link>
               </div>
 
-              {/* Event Logo */}
-              <div className="relative group">
-                <Image
-                  src="/20251018_003312.jpg"
-                  alt="Dig The Data 4.0"
-                  width={100}
-                  height={100}
-                  className="rounded-2xl shadow-lg transition-transform duration-300 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </div>
-
-              <div>
-                <h3 className="text-2xl font-bold gradient-text mb-2">
+              {/* Event Description */}
+              <div className="text-center sm:text-left w-full">
+                <h3 className="text-xl sm:text-2xl font-bold gradient-text mb-2">
                   Dig The Data 4.0
                 </h3>
-                <p className="text-gray-300 text-sm mb-4 max-w-md">
+                <p className="text-gray-300 text-sm mb-4 max-w-md mx-auto sm:mx-0">
                   Organized by NITER Computer Club (NCC). An exclusive data analytics competition for NITER 15th batch students.
                 </p>
-                <div className="flex items-center gap-2 text-sm text-cyan-400">
+                <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-cyan-400">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                   <span>Registration Open</span>
                 </div>

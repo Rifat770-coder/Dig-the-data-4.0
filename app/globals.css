@@ -101,11 +101,23 @@ body {
 }
 
 /* Modern Button Styles */
+/* Enhanced Button Styles for Banner Section */
 .btn-primary {
   background: linear-gradient(135deg, var(--primary-cyan), var(--primary-blue));
   border: 1px solid var(--border-primary);
   transition: all var(--duration-normal) cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 15px var(--shadow-cyan);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  cursor: pointer;
+  will-change: transform, box-shadow;
 }
 
 .btn-primary:hover {
@@ -113,6 +125,79 @@ body {
   box-shadow: 0 8px 25px var(--shadow-cyan);
 }
 
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px var(--shadow-cyan);
+}
+
+.btn-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.3), 0 4px 15px var(--shadow-cyan);
+}
+
+/* Cross-browser button compatibility */
+@supports (-webkit-appearance: none) {
+  .btn-primary {
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@supports (-moz-appearance: none) {
+  .btn-primary {
+    -moz-appearance: none;
+  }
+}
+
+/* Enhanced mobile touch targets */
+@media (max-width: 640px) {
+  .btn-primary {
+    min-height: 48px;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .btn-primary {
+    border: 2px solid #ffffff;
+  }
+  
+  .btn-primary:focus {
+    outline: 3px solid #ffffff;
+    outline-offset: 2px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary {
+    transition: none;
+  }
+  
+  .btn-primary:hover {
+    transform: none;
+  }
+  
+  .btn-primary svg {
+    transition: none;
+  }
+  
+  .btn-primary:hover svg {
+    transform: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .btn-primary {
+    background: #000 !important;
+    color: #fff !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+}
 .btn-secondary {
   background: rgba(139, 92, 246, 0.1);
   border: 1px solid rgba(139, 92, 246, 0.3);
@@ -236,4 +321,48 @@ body {
 .dot-pattern {
   background-image: radial-gradient(circle, rgba(0, 200, 255, 0.15) 1px, transparent 1px);
   background-size: 20px 20px;
+}
+
+/* Footer Grid Pattern */
+.grid-pattern {
+  background-image: 
+    linear-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Footer Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, #06b6d4, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Enhanced mobile touch targets for footer logos */
+@media (max-width: 640px) {
+  .logo-link {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 8px;
+  }
+}
+
+/* High contrast mode support for footer */
+@media (prefers-contrast: high) {
+  .logo-link:focus {
+    outline: 3px solid #ffffff;
+    outline-offset: 2px;
+  }
+}
+
+/* Reduced motion support for footer */
+@media (prefers-reduced-motion: reduce) {
+  .logo-link img {
+    transition: none;
+  }
+  .logo-link:hover img,
+  .logo-link:focus img {
+    transform: none;
+  }
 }

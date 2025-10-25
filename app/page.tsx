@@ -122,30 +122,30 @@ function ModernHeroSection() {
 function EventPlanComponent() {
   const events = [
     {
-      date: "25",
-      month: "OCT",
+      date: "01",
+      month: "NOV",
       title: "Registration Deadline",
       time: "11:59 PM",
       location: "NITER COMPUTER CLUB",
     },
 
     {
-      date: "26",
-      month: "OCT",
+      date: "03",
+      month: "NOV",
       title: "Preliminary Round",
       time: "10:00 AM - 06:00 PM",
       location: "AD 202, NITER",
     },
     {
-      date: "27",
-      month: "OCT",
+      date: "04",
+      month: "NOV",
       title: "Finalist Announcement",
       time: "8:00 AM - 12:00 PM",
       location: "AD 202, NITER",
     },
     {
-      date: "28",
-      month: "OCT",
+      date: "05",
+      month: "NOV",
       title: "Final Round",
       time: "10:00 AM - 06:00 PM",
       location: "AD 202, NITER",
