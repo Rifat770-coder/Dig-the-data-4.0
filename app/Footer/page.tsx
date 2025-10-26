@@ -184,81 +184,85 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-lg font-bold text-white mb-4 sm:mb-6 relative">
+          {/* Quick Links - Horizontal Layout for Mobile */}
+          <div className="col-span-full lg:col-span-1">
+            <h4 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-6 relative inline-block">
               Quick Links
-              <div className="absolute -bottom-2 left-0 w-12 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
+              <div className="absolute -bottom-1 sm:-bottom-2 left-0 w-16 sm:w-20 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
             </h4>
-            {/* Mobile: Horizontal layout (2 columns), Desktop: Vertical layout */}
-            <ul className="grid grid-cols-2 gap-x-4 gap-y-2 sm:flex sm:flex-col sm:space-y-3 sm:gap-0">
+            {/* Mobile: Single row with separators, Desktop: Vertical */}
+            <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-2 md:flex-col md:items-start md:space-y-3">
               {quickLinks.map((link, index) => (
-                <li key={index}>
+                <div key={index} className="flex items-center">
                   <Link
                     href={link.href}
-                    className="text-gray-300 hover:text-cyan-400 transition-colors duration-300 text-sm flex items-center gap-2 group"
+                    className="text-gray-300 hover:text-cyan-400 transition-colors duration-300 text-sm sm:text-base font-normal"
                   >
-                    <div className="w-1 h-1 bg-cyan-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     {link.name}
                   </Link>
-                </li>
+                  {index < quickLinks.length - 1 && (
+                    <span className="text-gray-500 mx-3 sm:mx-4 md:hidden">|</span>
+                  )}
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
 
-          {/* Contact Info */}
-          <div>
-            <h4 className="text-lg font-bold text-white mb-4 sm:mb-6 relative">
+          {/* Contact Info - Two Column Layout for Mobile */}
+          <div className="col-span-full lg:col-span-2">
+            <h4 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-6 relative inline-block">
               Contact Us
-              <div className="absolute -bottom-2 left-0 w-12 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
+              <div className="absolute -bottom-1 sm:-bottom-2 left-0 w-16 sm:w-20 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
             </h4>
-            <ul className="space-y-3 sm:space-y-4">
+            {/* Mobile: 1 column, Desktop: 1 column (vertical stack) */}
+            <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:gap-y-4">
               {contactInfo.map((contact, index) => (
-                <li key={index} className="group">
-                  <a
-                    href={contact.href}
-                    target={contact.href.startsWith('http') ? '_blank' : undefined}
-                    rel={contact.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                    className="flex items-start gap-2 sm:gap-3 text-gray-300 hover:text-cyan-400 transition-colors duration-300"
-                  >
-                    <div className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300 flex-shrink-0 mt-0.5">
-                      {contact.icon}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">
-                        {contact.label}
-                      </div>
-                      <div className="text-xs sm:text-sm break-words">
-                        {contact.value}
-                      </div>
-                    </div>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Follow Us Section */}
-          <div>
-            <h4 className="text-lg font-bold text-white mb-6 relative">
-              Follow Us
-              <div className="absolute -bottom-2 left-0 w-12 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
-            </h4>
-            <div className="flex flex-col gap-3">
-              {socialLinks.map((social, index) => (
                 <a
                   key={index}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`flex items-center gap-3 w-max p-3 bg-gray-800/30 border border-gray-700/50 rounded-xl text-gray-300 hover:text-white transition-all duration-300 hover:border-cyan-500/50 ${social.color} group`}
-                  aria-label={social.name}
+                  href={contact.href}
+                  target={contact.href.startsWith('http') ? '_blank' : undefined}
+                  rel={contact.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  className="flex items-start gap-2.5 sm:gap-3 text-gray-300 hover:text-cyan-400 transition-colors duration-300 group"
                 >
-                  <div className="w-5 h-5 text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300 flex-shrink-0">
-                    {social.icon}
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300 flex-shrink-0 mt-0.5">
+                    {contact.icon}
                   </div>
-                  <span className="text-sm font-medium">{social.name}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] sm:text-xs text-gray-400 uppercase tracking-wide mb-0.5 font-semibold">
+                      {contact.label}
+                    </div>
+                    <div className="text-sm sm:text-base text-gray-200 break-words leading-tight">
+                      {contact.value}
+                    </div>
+                  </div>
                 </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Follow Us Section - Circular Icons */}
+          <div className="col-span-full lg:col-span-1">
+            <h4 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-6 relative inline-block">
+              Follow Us
+              <div className="absolute -bottom-1 sm:-bottom-2 left-0 w-16 sm:w-20 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
+            </h4>
+            {/* Circular social icons */}
+            <div className="flex items-center gap-4 sm:gap-5">
+              {socialLinks.map((social, index) => (
+                <div key={index} className="flex flex-col items-center gap-2">
+                  <a
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-cyan-400 flex items-center justify-center text-cyan-400 hover:bg-cyan-400 hover:text-slate-900 transition-all duration-300 group"
+                    aria-label={social.name}
+                  >
+                    <div className="w-7 h-7 sm:w-9 sm:h-9 flex items-center justify-center">
+                      {social.icon}
+                    </div>
+                  </a>
+                  <span className="text-xs sm:text-sm text-gray-300">{social.name}</span>
+                </div>
               ))}
             </div>
           </div>
