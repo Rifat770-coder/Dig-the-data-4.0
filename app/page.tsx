@@ -90,9 +90,9 @@ function ModernNavigation() {
 // Enhanced Hero Section
 function ModernHeroSection() {
   return (
-    <section className="relative min-h-[30vh] sm:min-h-[40vh] md:min-h-[50vh] flex items-center justify-center overflow-hidden py-8 sm:py-12 md:py-16">
+    <section className="relative min-h-[30vh] sm:min-h-[40vh] md:min-h-[50vh] flex items-center justify-center overflow-hidden py-8 sm:py-12 md:py-16 bg-gradient-to-b from-slate-900 via-blue-900/40 to-slate-900">
       {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/50 via-blue-900/30 to-slate-900/50"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/80 via-blue-900/50 to-slate-900/80"></div>
 
       {/* Animated Background Shapes */}
       <div className="absolute inset-0 overflow-hidden">
@@ -156,7 +156,7 @@ function EventPlanComponent() {
   ];
 
   return (
-    <div className="mb-16 relative overflow-hidden rounded-3xl bg-gray-900/80 backdrop-blur-xl border border-cyan-500/30 shadow-2xl">
+    <div className="mb-0 relative overflow-hidden bg-gray-900/80 backdrop-blur-xl border-y border-cyan-500/30 shadow-2xl">
       {/* Decorative Elements */}
       <div className="absolute top-0 right-0 w-32 h-32">
         <div className="grid grid-cols-6 gap-2 p-4">
@@ -181,7 +181,7 @@ function EventPlanComponent() {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/5 rounded-full"></div>
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-12">
+      <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-6xl md:text-8xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-4 leading-tight">
@@ -453,7 +453,7 @@ function PreviousEventsGallery() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
       {/* Header */}
       <div className="text-center mb-16">
         <h2 className="text-6xl md:text-8xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-4 leading-tight">
@@ -543,9 +543,9 @@ function PreviousEventsGallery() {
           <button
             onClick={handlePrev}
             disabled={isAnimating}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-gray-900/80 backdrop-blur-sm border border-cyan-500/30 rounded-full p-3 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute left-1 md:left-4 top-1/2 transform -translate-y-1/2 bg-gray-900/80 backdrop-blur-sm border border-cyan-500/30 rounded-full p-2 md:p-3 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
@@ -553,9 +553,9 @@ function PreviousEventsGallery() {
           <button
             onClick={handleNext}
             disabled={isAnimating}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-gray-900/80 backdrop-blur-sm border border-cyan-500/30 rounded-full p-3 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute right-1 md:right-4 top-1/2 transform -translate-y-1/2 bg-gray-900/80 backdrop-blur-sm border border-cyan-500/30 rounded-full p-2 md:p-3 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -599,9 +599,9 @@ function PreviousEventsGallery() {
 // Modern CTA Section
 function ModernCTASection() {
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8">
+    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-900/50 via-blue-900/30 to-slate-900/50">
       <div className="max-w-4xl mx-auto">
-        <div className="modern-card p-12 text-center relative overflow-hidden">
+        <div className="modern-card p-12 text-center relative overflow-hidden bg-gray-900/90 backdrop-blur-xl border border-cyan-500/30 rounded-3xl shadow-2xl">
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-10">
             <div className="absolute inset-0 grid-pattern"></div>
@@ -639,7 +639,7 @@ function ModernCTASection() {
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white">
+    <div className="min-h-screen bg-gradient-to-b from-transparent via-slate-900/30 to-transparent text-white">
       {/* Modern Navigation */}
       <ModernNavigation />
 
@@ -653,12 +653,12 @@ export default function Home() {
       <EventPlanComponent />
 
       {/* Features Section */}
-      <section id="features" className="py-20">
+      <section id="features" className="bg-gradient-to-b from-slate-900/50 via-blue-900/20 to-slate-900/50">
         <PreviousEventsGallery />
       </section>
 
       {/* Legacy Section */}
-      <section id="legacy" className="py-20">
+      <section id="legacy">
         <LegacyPage />
       </section>
 
