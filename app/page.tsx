@@ -137,20 +137,20 @@ function EventPlanComponent() {
       month: "NOV",
       title: "Preliminary Round",
       time: "4.00pm - 6.00 pm",
-      location: "AC-101, AC-116,AC-104",
+      location: "AC-101, AC-116, AC-104",
     },
     {
       date: "04",
       month: "NOV",
       title: "Finalist Announcement",
-      time: "12.00 pm-4.00pm",
+      time: "12.00 pm-4.00 pm",
       location: "Dig the data website",
     },
     {
       date: "05",
       month: "NOV",
       title: "Final Round",
-      time: "12.00 pm to 5.00 pm",
+      time: "12.00 pm-5.00 pm",
       location: "AD 202, NITER",
     },
   ];
