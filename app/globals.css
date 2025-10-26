@@ -152,8 +152,7 @@ body {
 /* Enhanced mobile touch targets */
 @media (max-width: 640px) {
   .btn-primary {
-    min-height: 44px;
-    min-width: 100px;
+    min-height: 48px;
     touch-action: manipulation;
     -webkit-touch-callout: none;
   }
@@ -264,51 +263,20 @@ body {
 
 /* Responsive Typography */
 .text-responsive-xl {
-  font-size: clamp(1.75rem, 4.5vw, 4rem);
+  font-size: clamp(2rem, 5vw, 4rem);
   line-height: 1.1;
   font-weight: 800;
 }
 
 .text-responsive-lg {
-  font-size: clamp(1.25rem, 2.8vw, 2.5rem);
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
   line-height: 1.2;
   font-weight: 700;
 }
 
 .text-responsive-md {
-  font-size: clamp(0.9rem, 1.8vw, 1.25rem);
+  font-size: clamp(1rem, 2vw, 1.25rem);
   line-height: 1.5;
-}
-
-/* Enhanced 360x640 viewport optimizations */
-@media (max-width: 360px) {
-  .text-responsive-xl {
-    font-size: 1.75rem;
-    line-height: 1.15;
-  }
-  
-  .text-responsive-lg {
-    font-size: 1.25rem;
-    line-height: 1.25;
-  }
-  
-  .text-responsive-md {
-    font-size: 0.9rem;
-    line-height: 1.4;
-  }
-  
-  /* Ensure proper spacing for small screens */
-  .max-w-7xl {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-  
-  /* Optimize button spacing for very small screens */
-  .btn-primary {
-    min-height: 44px;
-    min-width: 90px;
-    font-size: 0.875rem;
-  }
 }
 
 /* Modern Animations */
