@@ -11,6 +11,16 @@ export const account = new Account(client);
 export const databases = new Databases(client);
 export const storage = new Storage(client);
 
+// Helper function to safely get current user
+export const getCurrentUser = async () => {
+  try {
+    return await account.get();
+  } catch (error) {
+    // User is not authenticated, return null instead of throwing
+    return null;
+  }
+};
+
 // Database configuration
 export const DATABASE_ID = '68efd8c400255230a04a';
 export const USERS_COLLECTION_ID = '15';
