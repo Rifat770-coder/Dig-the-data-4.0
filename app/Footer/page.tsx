@@ -225,7 +225,7 @@ export default function Footer() {
                       {contact.icon}
                     </div>
                     <div className="min-w-0">
-                      <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+                      <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">
                         {contact.label}
                       </div>
                       <div className="text-xs sm:text-sm break-words">
@@ -251,7 +251,7 @@ export default function Footer() {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`flex items-center gap-3 w-full p-3 bg-gray-800/30 border border-gray-700/50 rounded-xl text-gray-300 hover:text-white transition-all duration-300 hover:border-cyan-500/50 ${social.color} group`}
+                  className={`flex items-center gap-3 w-max p-3 bg-gray-800/30 border border-gray-700/50 rounded-xl text-gray-300 hover:text-white transition-all duration-300 hover:border-cyan-500/50 ${social.color} group`}
                   aria-label={social.name}
                 >
                   <div className="w-5 h-5 text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300 flex-shrink-0">
