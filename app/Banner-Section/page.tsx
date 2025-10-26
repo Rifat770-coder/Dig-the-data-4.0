@@ -35,22 +35,47 @@ export default function BannerSection() {
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           }`}
         >
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <div className="relative group">
-              <Image
-                src="/ncc logo new    ncc.png"
-                alt="NITER Computer Club"
-                width={80}
-                height={80}
-                className="object-contain rounded-2xl shadow-lg transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          {/* Mobile Layout (640×695 px) - Logo above text */}
+          <div className="block mobile-640:block md:hidden">
+            <div className="flex flex-col items-center gap-6 mb-8">
+              <div className="relative group">
+                <Image
+                  src="/ncc logo new    ncc.png"
+                  alt="NITER Computer Club"
+                  width={100}
+                  height={100}
+                  className="object-contain rounded-2xl shadow-lg transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  NITER Computer Club
+                </h2>
+                <p className="text-cyan-400 font-medium">Presents</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                NITER Computer Club
-              </h2>
-              <p className="text-cyan-400 font-medium">Presents</p>
+          </div>
+
+          {/* Desktop Layout - Logo beside text */}
+          <div className="hidden md:block">
+            <div className="flex items-center justify-center gap-4 mb-8">
+              <div className="relative group">
+                <Image
+                  src="/ncc logo new    ncc.png"
+                  alt="NITER Computer Club"
+                  width={80}
+                  height={80}
+                  className="object-contain rounded-2xl shadow-lg transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </div>
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                  NITER Computer Club
+                </h2>
+                <p className="text-cyan-400 font-medium">Presents</p>
+              </div>
             </div>
           </div>
         </div>

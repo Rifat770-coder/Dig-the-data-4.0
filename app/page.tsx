@@ -33,7 +33,7 @@ function ModernNavigation() {
           <div className="flex items-center gap-4 group">
             <div className="relative">
               <Image
-                src="/20251018_014712.png"
+                src="/20251018_003312.jpg"
                 alt="Dig The Data Logo"
                 width={60}
                 height={60}
@@ -64,16 +64,18 @@ function ModernNavigation() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Login button - Consistent sizing with Register button */}
             <Link
               href="/login"
-              className="px-6 py-2.5 text-cyan-400 border border-cyan-500/30 rounded-xl font-semibold hover:bg-cyan-500/10 transition-all duration-300 hidden sm:block"
+              className="px-3 py-2.5 sm:px-6 sm:py-2.5 text-cyan-400 border border-cyan-500/30 rounded-xl font-semibold hover:bg-cyan-500/10 transition-all duration-300 text-sm sm:text-base min-h-[44px] min-w-[100px] sm:min-w-[120px] flex items-center justify-center"
             >
               Login
             </Link>
+            {/* Register button - Consistent sizing with Login button */}
             <Link
               href="/register"
-              className="btn-primary px-6 py-2.5 text-white rounded-xl font-semibold text-sm sm:text-base"
+              className="btn-primary px-3 py-2.5 sm:px-6 sm:py-2.5 text-white rounded-xl font-semibold text-sm sm:text-base min-h-[44px] min-w-[100px] sm:min-w-[120px] flex items-center justify-center"
             >
               Register Now
             </Link>
@@ -109,8 +111,8 @@ function ModernHeroSection() {
 
           {/* Subtitle */}
           <p className="text-responsive-md text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            Where <span className="text-cyan-400 font-semibold">Mystery</span>{" "}
-            Meets <span className="text-blue-400 font-semibold">Logic</span>
+            Where <span className="text-cyan-400 font-semibold">Logic </span>{" "}
+            Meets <span className="text-blue-400 font-semibold">Mystery</span>
           </p>
         </div>
       </div>
