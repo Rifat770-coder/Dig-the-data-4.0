@@ -186,11 +186,12 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-lg font-bold text-white mb-6 relative">
+            <h4 className="text-lg font-bold text-white mb-4 sm:mb-6 relative">
               Quick Links
               <div className="absolute -bottom-2 left-0 w-12 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
             </h4>
-            <ul className="space-y-3">
+            {/* Mobile: Horizontal layout (2 columns), Desktop: Vertical layout */}
+            <ul className="grid grid-cols-2 gap-x-4 gap-y-2 sm:flex sm:flex-col sm:space-y-3 sm:gap-0">
               {quickLinks.map((link, index) => (
                 <li key={index}>
                   <Link
@@ -207,27 +208,27 @@ export default function Footer() {
 
           {/* Contact Info */}
           <div>
-            <h4 className="text-lg font-bold text-white mb-6 relative">
+            <h4 className="text-lg font-bold text-white mb-4 sm:mb-6 relative">
               Contact Us
               <div className="absolute -bottom-2 left-0 w-12 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
             </h4>
-            <ul className="space-y-4">
+            <ul className="space-y-3 sm:space-y-4">
               {contactInfo.map((contact, index) => (
                 <li key={index} className="group">
                   <a
                     href={contact.href}
                     target={contact.href.startsWith('http') ? '_blank' : undefined}
                     rel={contact.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                    className="flex items-start gap-3 text-gray-300 hover:text-cyan-400 transition-colors duration-300"
+                    className="flex items-start gap-2 sm:gap-3 text-gray-300 hover:text-cyan-400 transition-colors duration-300"
                   >
-                    <div className="w-5 h-5 text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300 flex-shrink-0 mt-0.5">
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300 flex-shrink-0 mt-0.5">
                       {contact.icon}
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">
                         {contact.label}
                       </div>
-                      <div className="text-sm">
+                      <div className="text-xs sm:text-sm break-words">
                         {contact.value}
                       </div>
                     </div>
