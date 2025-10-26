@@ -39,7 +39,8 @@
   --duration-slow: 500ms;
 }
 
-@theme inline {
+/* Replaced unsupported @theme at-rule with a valid CSS class to avoid unknown at-rule errors */
+.theme-inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -139,6 +140,7 @@ body {
 @supports (-webkit-appearance: none) {
   .btn-primary {
     -webkit-appearance: none;
+    appearance: none;
     -webkit-tap-highlight-color: transparent;
   }
 }
@@ -146,6 +148,7 @@ body {
 @supports (-moz-appearance: none) {
   .btn-primary {
     -moz-appearance: none;
+    appearance: none;
   }
 }
 
@@ -263,19 +266,19 @@ body {
 
 /* Responsive Typography */
 .text-responsive-xl {
-  font-size: clamp(2rem, 5vw, 4rem);
+  font-size: clamp(1.5rem, 5vw, 4rem);
   line-height: 1.1;
   font-weight: 800;
 }
 
 .text-responsive-lg {
-  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-size: clamp(1.25rem, 3vw, 2.5rem);
   line-height: 1.2;
   font-weight: 700;
 }
 
 .text-responsive-md {
-  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-size: clamp(0.875rem, 2vw, 1.25rem);
   line-height: 1.5;
 }
 
@@ -345,6 +348,20 @@ body {
     min-height: 44px;
     min-width: 44px;
     padding: 8px;
+  }
+  
+  /* Optimize navbar for small phones (360px) */
+  nav {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  
+  /* Reduce button padding for very small screens */
+  @media (max-width: 380px) {
+    .btn-primary,
+    .modern-input {
+      font-size: 0.75rem;
+    }
   }
 }
 

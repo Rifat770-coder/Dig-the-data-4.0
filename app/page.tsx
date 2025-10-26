@@ -27,23 +27,23 @@ function ModernNavigation() {
           : "bg-transparent"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
           {/* Logo Section */}
-          <div className="flex items-center gap-4 group">
+          <div className="flex items-center gap-2 sm:gap-3 md:gap-4 group">
             <div className="relative">
               <Image
                 src="/20251018_003312.jpg"
                 alt="Dig The Data Logo"
-                width={60}
-                height={60}
-                className="rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-105"
+                width={40}
+                height={40}
+                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg sm:rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-105"
               />
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </div>
             <div>
-              <h1 className="text-2xl font-bold gradient-text">Dig The Data</h1>
-              <p className="text-xs text-cyan-400/80 font-medium">4.0</p>
+              <h1 className="text-base sm:text-xl md:text-2xl font-bold gradient-text">Dig The Data</h1>
+              <p className="text-[10px] sm:text-xs text-cyan-400/80 font-medium">4.0</p>
             </div>
           </div>
 
@@ -64,20 +64,21 @@ function ModernNavigation() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Login button - Consistent sizing with Register button */}
+          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
+            {/* Login button - Optimized for mobile */}
             <Link
               href="/login"
-              className="px-3 py-2.5 sm:px-6 sm:py-2.5 text-cyan-400 border border-cyan-500/30 rounded-xl font-semibold hover:bg-cyan-500/10 transition-all duration-300 text-sm sm:text-base min-h-[44px] min-w-[100px] sm:min-w-[120px] flex items-center justify-center"
+              className="px-2 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2.5 text-cyan-400 border border-cyan-500/30 rounded-lg sm:rounded-xl font-semibold hover:bg-cyan-500/10 transition-all duration-300 text-xs sm:text-sm md:text-base min-h-[36px] sm:min-h-[40px] md:min-h-[44px] min-w-[60px] sm:min-w-[80px] md:min-w-[100px] flex items-center justify-center"
             >
               Login
             </Link>
-            {/* Register button - Consistent sizing with Login button */}
+            {/* Register button - Optimized for mobile */}
             <Link
               href="/register"
-              className="btn-primary px-3 py-2.5 sm:px-6 sm:py-2.5 text-white rounded-xl font-semibold text-sm sm:text-base min-h-[44px] min-w-[100px] sm:min-w-[120px] flex items-center justify-center"
+              className="btn-primary px-2 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2.5 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm md:text-base min-h-[36px] sm:min-h-[40px] md:min-h-[44px] min-w-[70px] sm:min-w-[90px] md:min-w-[110px] flex items-center justify-center whitespace-nowrap"
             >
-              Register Now
+              <span className="hidden sm:inline">Register Now</span>
+              <span className="sm:hidden">Register</span>
             </Link>
           </div>
         </div>
@@ -89,20 +90,20 @@ function ModernNavigation() {
 // Enhanced Hero Section
 function ModernHeroSection() {
   return (
-    <section className="relative min-h-[50vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[30vh] sm:min-h-[40vh] md:min-h-[50vh] flex items-center justify-center overflow-hidden py-8 sm:py-12 md:py-16">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900/50 via-blue-900/30 to-slate-900/50"></div>
 
       {/* Animated Background Shapes */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/4 left-1/4 w-64 sm:w-80 md:w-96 h-64 sm:h-80 md:h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-64 sm:w-80 md:w-96 h-64 sm:h-80 md:h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div className="space-y-8 animate-fade-in-up">
+      <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center">
+        <div className="space-y-4 sm:space-y-6 md:space-y-8 animate-fade-in-up">
           {/* Main Heading */}
-          <div className="space-y-2">
+          <div className="space-y-1 sm:space-y-2">
             <h1 className="text-responsive-xl gradient-text">Welcome to</h1>
             <h2 className="text-responsive-xl text-white font-black tracking-tight">
               Dig The Data 4.0
