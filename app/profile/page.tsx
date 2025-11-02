@@ -72,21 +72,13 @@ export default function ProfilePage() {
         // Load profile picture if available
         if (data.profilePictureId) {
           const pictureUrl = getProfilePictureUrl(data.profilePictureId);
-          if (pictureUrl) {
-            setProfilePictureUrl(pictureUrl);
-          } else {
-            console.warn('Failed to generate profile picture URL for ID:', data.profilePictureId);
-          }
+          setProfilePictureUrl(pictureUrl);
         }
 
         // Load bKash receipt if available
         if (data.bkashTransactionPhotoId) {
           const receiptUrl = getBkashReceiptUrl(data.bkashTransactionPhotoId);
-          if (receiptUrl) {
-            setBkashReceiptUrl(receiptUrl);
-          } else {
-            console.warn('Failed to generate bKash receipt URL for ID:', data.bkashTransactionPhotoId);
-          }
+          setBkashReceiptUrl(receiptUrl);
         }
       }
     } catch (error) {
@@ -101,16 +93,6 @@ export default function ProfilePage() {
   const handleProfilePictureUpdate = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !userData || !documentId) return;
-
-    // Extract file extension from filename
-    const fileExtension = file.name.split('.').pop()?.toLowerCase();
-    
-    // Validate file extension - Appwrite typically requires specific extensions
-    const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
-      alert('Please upload a valid image file with extension: jpg, jpeg, png, gif, or webp');
-      return;
-    }
 
     // Validate file - using only standard MIME types
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -156,13 +138,8 @@ export default function ProfilePage() {
 
       // Update UI
       const newPictureUrl = getProfilePictureUrl(fileUpload.$id);
-      if (newPictureUrl) {
-        setProfilePictureUrl(newPictureUrl);
-        setUserData({ ...userData, profilePictureId: fileUpload.$id });
-      } else {
-        console.error('Failed to generate URL for new profile picture');
-        alert('Profile picture uploaded but failed to display. Please refresh the page.');
-      }
+      setProfilePictureUrl(newPictureUrl);
+      setUserData({ ...userData, profilePictureId: fileUpload.$id });
 
       alert('Profile picture updated successfully! 🎉');
     } catch (error) {
