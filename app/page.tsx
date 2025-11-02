@@ -72,13 +72,12 @@ function ModernNavigation() {
             >
               Login
             </Link>
-            {/* Register button - Optimized for mobile */}
+            {/* Register button - Consistent text across all devices */}
             <Link
               href="/register"
-              className="btn-primary px-2 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2.5 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm md:text-base min-h-[36px] sm:min-h-[40px] md:min-h-[44px] min-w-[70px] sm:min-w-[90px] md:min-w-[110px] flex items-center justify-center whitespace-nowrap"
+              className="btn-primary px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2.5 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm md:text-base min-h-[36px] sm:min-h-[40px] md:min-h-[44px] min-w-[100px] sm:min-w-[110px] md:min-w-[130px] flex items-center justify-center whitespace-nowrap"
             >
-              <span className="hidden sm:inline">Register Now</span>
-              <span className="sm:hidden">Register</span>
+              Register Now
             </Link>
           </div>
         </div>
@@ -125,7 +124,7 @@ function ModernHeroSection() {
 function EventPlanComponent() {
   const events = [
     {
-      date: "01",
+      date: "08",
       month: "NOV",
       title: "Registration Deadline",
       time: "11:59 PM",
@@ -133,21 +132,21 @@ function EventPlanComponent() {
     },
 
     {
-      date: "03",
+      date: "10",
       month: "NOV",
       title: "Preliminary Round",
       time: "4.00pm - 6.00 pm",
       location: "AC-101, AC-116, AC-104",
     },
     {
-      date: "04",
+      date: "11",
       month: "NOV",
       title: "Finalist Announcement",
       time: "12.00 pm-4.00 pm",
       location: "Dig the data website",
     },
     {
-      date: "05",
+      date: "12",
       month: "NOV",
       title: "Final Round",
       time: "12.00 pm-5.00 pm",

@@ -356,11 +356,28 @@ body {
     padding-right: 0.5rem;
   }
   
+  /* Ensure registration button text fits on small screens */
+  .btn-primary {
+    font-size: 0.75rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
   /* Reduce button padding for very small screens */
   @media (max-width: 380px) {
     .btn-primary,
     .modern-input {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
+    }
+    
+    /* Ensure Register Now button has adequate space */
+    .btn-primary {
+      min-width: 90px;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
     }
   }
 }
