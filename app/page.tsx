@@ -124,7 +124,7 @@ function ModernHeroSection() {
 function EventPlanComponent() {
   const events = [
     {
-      date: "08",
+      date: "09",
       month: "NOV",
       title: "Registration Deadline",
       time: "11:59 PM",
