@@ -1,0 +1,40 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="192" height="192" fill="#0f172a" rx="16"/>
+  <rect x="16" y="16" width="160" height="160" fill="#1e293b" rx="12"/>
+  
+  <!-- Sky gradient -->
+  <defs>
+    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e40af;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect x="16" y="16" width="160" height="80" fill="url(#skyGradient)" rx="12"/>
+  
+  <!-- Ground -->
+  <rect x="16" y="96" width="160" height="80" fill="#166534" rx="0 0 12 12"/>
+  
+  <!-- Sun -->
+  <circle cx="150" cy="40" r="12" fill="#fbbf24"/>
+  <path d="M150 20v8M150 52v8M170 40h-8M138 40h-8M164 26l-6 6M142 48l-6 6M164 54l-6-6M142 32l-6-6" stroke="#fbbf24" stroke-width="2"/>
+  
+  <!-- Mountains -->
+  <polygon points="40,96 60,60 80,96" fill="#6b7280"/>
+  <polygon points="70,96 90,50 110,96" fill="#4b5563"/>
+  
+  <!-- Map pin -->
+  <circle cx="96" cy="130" r="8" fill="#ef4444"/>
+  <path d="M96 122c-4.4 0-8 3.6-8 8s8 16 8 16 8-11.6 8-16-3.6-8-8-8z" fill="#dc2626"/>
+  <circle cx="96" cy="130" r="3" fill="#ffffff"/>
+  
+  <!-- Compass -->
+  <circle cx="140" cy="130" r="12" fill="#1f2937" stroke="#6b7280" stroke-width="2"/>
+  <path d="M140 122v16M132 130h16" stroke="#6b7280" stroke-width="1"/>
+  <polygon points="140,125 143,130 140,135 137,130" fill="#ef4444"/>
+  
+  <!-- Trees -->
+  <rect x="48" y="110" width="4" height="20" fill="#92400e"/>
+  <circle cx="50" cy="110" r="6" fill="#166534"/>
+  <rect x="118" y="115" width="4" height="15" fill="#92400e"/>
+  <circle cx="120" cy="115" r="5" fill="#166534"/>
+</svg>

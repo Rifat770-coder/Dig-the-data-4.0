@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { account, databases, storage, DATABASE_ID, USERS_COLLECTION_ID, PROFILE_PICTURES_BUCKET_ID, BKASH_RECEIPTS_BUCKET_ID, getProfilePictureUrl, getBkashReceiptUrl } from '@/lib/appwrite';
+import { account, databases, storage, DATABASE_ID, USERS_COLLECTION_ID, PROFILE_PICTURES_BUCKET_ID, getProfilePictureUrl, getBkashReceiptUrl } from '@/lib/appwrite';
 import { Models, Query, ID } from 'appwrite';
+import { getTeamSession, isTeamSessionValid, clearTeamSession } from '@/lib/auth-api';
+import { getTeamByCode, Team } from '@/lib/team-api';
 
 interface UserData {
   name: string;
@@ -27,6 +29,8 @@ export default function ProfilePage() {
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
   const [bkashReceiptUrl, setBkashReceiptUrl] = useState<string | null>(null);
   const [uploadingNewPicture, setUploadingNewPicture] = useState(false);
+  const [isTeamMode, setIsTeamMode] = useState(false);
+  const [teamData, setTeamData] = useState<Team | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -37,6 +41,7 @@ export default function ProfilePage() {
     if (mounted) {
       fetchUserData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]);
 
   // Add a function to refresh profile data
@@ -47,6 +52,39 @@ export default function ProfilePage() {
 
   const fetchUserData = async () => {
     try {
+      // Check if team session exists first
+      if (isTeamSessionValid()) {
+        const teamSession = getTeamSession();
+        if (teamSession) {
+          // Team mode - fetch team data from Appwrite
+          setIsTeamMode(true);
+          setUser(null);
+          setUserData(null);
+          setProfilePictureUrl(null);
+          setBkashReceiptUrl(null);
+          
+          try {
+            const team = await getTeamByCode(teamSession.teamCode);
+            if (team) {
+              setTeamData(team);
+            } else {
+              console.error('Team not found in database');
+              router.push('/login');
+            }
+          } catch (teamError) {
+            console.error('Error fetching team data:', teamError);
+            router.push('/login');
+          }
+          
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Individual user mode - existing logic
+      setIsTeamMode(false);
+      setTeamData(null);
+
       // Get current logged-in user
       const currentUser = await account.get();
       setUser(currentUser);
@@ -158,11 +196,23 @@ export default function ProfilePage() {
       setProfilePictureUrl(null);
       setBkashReceiptUrl(null);
       setDocumentId(null);
+      setIsTeamMode(false);
+      setTeamData(null);
       
-      await account.deleteSession('current');
+      // Clear team session if exists
+      if (isTeamSessionValid()) {
+        clearTeamSession();
+      } else {
+        // Clear individual user session
+        await account.deleteSession('current');
+      }
+      
       router.push('/');
     } catch (error) {
       console.error('Logout error:', error);
+      // Attempt to clear team session as fallback
+      clearTeamSession();
+      router.push('/');
     }
   };
 
@@ -177,12 +227,29 @@ export default function ProfilePage() {
     );
   }
 
-  if (!user || !userData) {
+  if (!isTeamMode && (!user || !userData)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center p-4">
         <div className="bg-gray-800/80 backdrop-blur-xl border border-red-500/30 rounded-2xl p-8 text-center">
           <h2 className="text-2xl font-bold text-red-400 mb-4">Profile Not Found</h2>
-          <p className="text-gray-300 mb-6">We couldn&apos;tfind your profile data.</p>
+          <p className="text-gray-300 mb-6">We couldn&apos;t find your profile data.</p>
+          <Link
+            href="/"
+            className="inline-block px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg font-semibold hover:from-cyan-400 hover:to-blue-400 transition-all duration-300"
+          >
+            Go Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (isTeamMode && !teamData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center p-4">
+        <div className="bg-gray-800/80 backdrop-blur-xl border border-red-500/30 rounded-2xl p-8 text-center">
+          <h2 className="text-2xl font-bold text-red-400 mb-4">Team Not Found</h2>
+          <p className="text-gray-300 mb-6">We couldn&apos;t find your team data.</p>
           <Link
             href="/"
             className="inline-block px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg font-semibold hover:from-cyan-400 hover:to-blue-400 transition-all duration-300"
@@ -255,16 +322,119 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Profile Card */}
-          <div className="bg-gray-900/90 backdrop-blur-xl border border-cyan-500/30 rounded-2xl shadow-2xl shadow-cyan-500/20 overflow-hidden">
-            {/* Header Section */}
-            <div className="bg-gradient-to-r from-cyan-500 to-blue-500 p-8 text-center">
+          {/* Team Profile Card */}
+          {isTeamMode && teamData ? (
+            <>
+              <div className="bg-gray-900/90 backdrop-blur-xl border border-yellow-500/30 rounded-2xl shadow-2xl shadow-yellow-500/20 overflow-hidden">
+                {/* Team Header Section */}
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-8 text-center">
+                  <div className="w-24 h-24 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg">
+                    <svg className="w-12 h-12 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                    </svg>
+                  </div>
+                  <h1 className="text-3xl font-bold text-white mb-2">{teamData.teamName}</h1>
+                  <p className="text-yellow-100 font-semibold">Team Profile</p>
+                </div>
+
+                {/* Team Details */}
+                <div className="p-8 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Team Name */}
+                    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+                      <label className="text-sm text-yellow-400 font-medium mb-2 block">Team Name</label>
+                      <p className="text-white text-lg font-semibold">{teamData.teamName}</p>
+                    </div>
+
+                    {/* Team Code */}
+                    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+                      <label className="text-sm text-yellow-400 font-medium mb-2 block">Team Code</label>
+                      <p className="text-white text-lg font-mono font-semibold">{teamData.teamCode}</p>
+                    </div>
+
+                    {/* Password */}
+                    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+                      <label className="text-sm text-yellow-400 font-medium mb-2 block">Password</label>
+                      <p className="text-white text-lg font-mono">{'•'.repeat(teamData.password.length)}</p>
+                    </div>
+
+                    {/* Score */}
+                    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+                      <label className="text-sm text-yellow-400 font-medium mb-2 block">Current Score</label>
+                      <p className="text-white text-lg font-semibold">{teamData.score || 0} points</p>
+                    </div>
+
+                    {/* Team Members */}
+                    {teamData.memberIds && teamData.memberIds.length > 0 && (
+                      <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 md:col-span-2">
+                        <label className="text-sm text-yellow-400 font-medium mb-2 block">Team Members</label>
+                        <p className="text-white text-lg font-semibold">{teamData.memberIds.length} members</p>
+                      </div>
+                    )}
+
+                    {/* Created Date */}
+                    {teamData.$createdAt && (
+                      <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 md:col-span-2">
+                        <label className="text-sm text-yellow-400 font-medium mb-2 block">Team Created On</label>
+                        <p className="text-white text-lg font-semibold">
+                          {new Date(teamData.$createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Team Status */}
+                  <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-lg p-6 text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <svg className="w-6 h-6 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-green-400 text-xl font-bold">Team Session Active</span>
+                    </div>
+                    <p className="text-gray-300">Your team is registered and ready to compete!</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Team Info Card */}
+              <div className="mt-6 bg-gray-900/90 backdrop-blur-xl border border-yellow-500/30 rounded-2xl p-6">
+                <h2 className="text-xl font-bold text-yellow-400 mb-4">Team Information</h2>
+                <div className="space-y-3 text-gray-300">
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                    </svg>
+                    <span>Logged in as: <span className="text-yellow-400 font-medium">Team</span></span>
+                  </div>
+                  {teamData.$id && (
+                    <div className="flex items-center gap-3">
+                      <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                      <span>Team ID: <span className="text-white font-mono text-sm">{teamData.$id}</span></span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Individual Profile Card */
+            <>
+              <div className="bg-gray-900/90 backdrop-blur-xl border border-cyan-500/30 rounded-2xl shadow-2xl shadow-cyan-500/20 overflow-hidden">
+                {/* Header Section */}
+                <div className="bg-gradient-to-r from-cyan-500 to-blue-500 p-8 text-center">
               <div className="relative w-24 h-24 mx-auto mb-4 group">
                 {profilePictureUrl ? (
                   <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
                     <Image
                       src={profilePictureUrl}
-                      alt={`${userData.name}'s profile`}
+                      alt={`${userData!.name}'s profile`}
                       fill
                       className="object-cover"
                     />
@@ -304,8 +474,8 @@ export default function ProfilePage() {
                   disabled={uploadingNewPicture}
                 />
               </div>
-              <h1 className="text-3xl font-bold text-white mb-2">{userData.name}</h1>
-              <p className="text-cyan-100">{userData.email}</p>
+              <h1 className="text-3xl font-bold text-white mb-2">{userData!.name}</h1>
+              <p className="text-cyan-100">{userData!.email}</p>
             </div>
 
             {/* Profile Details */}
@@ -314,19 +484,19 @@ export default function ProfilePage() {
                 {/* User ID */}
                 <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
                   <label className="text-sm text-cyan-400 font-medium mb-2 block">User ID</label>
-                  <p className="text-white text-lg font-semibold">{userData.userId}</p>
+                  <p className="text-white text-lg font-semibold">{userData!.userId}</p>
                 </div>
 
                 {/* Department */}
                 <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
                   <label className="text-sm text-cyan-400 font-medium mb-2 block">Department</label>
-                  <p className="text-white text-lg font-semibold">{userData.department}</p>
+                  <p className="text-white text-lg font-semibold">{userData!.department}</p>
                 </div>
 
                 {/* Phone */}
                 <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
                   <label className="text-sm text-cyan-400 font-medium mb-2 block">Phone Number</label>
-                  <p className="text-white text-lg font-semibold">{userData.Phone}</p>
+                  <p className="text-white text-lg font-semibold">{userData!.Phone}</p>
                 </div>
 
                 {/* bKash Transaction Screenshot */}
@@ -356,7 +526,7 @@ export default function ProfilePage() {
                 <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 md:col-span-2">
                   <label className="text-sm text-cyan-400 font-medium mb-2 block">Registered On</label>
                   <p className="text-white text-lg font-semibold">
-                    {new Date(userData.createdAt).toLocaleDateString('en-US', {
+                    {new Date(userData!.createdAt).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric',
@@ -395,10 +565,12 @@ export default function ProfilePage() {
                 <svg className="w-5 h-5 text-cyan-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                 </svg>
-                <span>Account ID: <span className="text-white font-mono text-sm">{user.$id}</span></span>
+                <span>Account ID: <span className="text-white font-mono text-sm">{user!.$id}</span></span>
               </div>
             </div>
           </div>
+            </>
+          )}
         </div>
       </div>
     </div>

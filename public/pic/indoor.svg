@@ -1,0 +1,24 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="192" height="192" fill="#1e293b" rx="16"/>
+  <rect x="16" y="16" width="160" height="160" fill="#334155" rx="12"/>
+  
+  <!-- Light bulb icon -->
+  <circle cx="96" cy="80" r="20" fill="#fbbf24" stroke="#f59e0b" stroke-width="2"/>
+  <path d="M86 100h20v8a4 4 0 01-4 4h-12a4 4 0 01-4-4v-8z" fill="#6b7280"/>
+  <path d="M88 112h16v4a2 2 0 01-2 2h-12a2 2 0 01-2-2v-4z" fill="#4b5563"/>
+  
+  <!-- Puzzle pieces -->
+  <rect x="40" y="130" width="24" height="24" fill="#3b82f6" rx="4"/>
+  <rect x="70" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+  <rect x="100" y="130" width="24" height="24" fill="#f59e0b" rx="4"/>
+  <rect x="130" y="130" width="24" height="24" fill="#ef4444" rx="4"/>
+  
+  <!-- Question marks -->
+  <text x="50" y="50" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#64748b">?</text>
+  <text x="130" y="50" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#64748b">?</text>
+  
+  <!-- Indoor elements -->
+  <rect x="30" y="20" width="4" height="40" fill="#64748b"/>
+  <rect x="158" y="20" width="4" height="40" fill="#64748b"/>
+  <rect x="30" y="20" width="132" height="4" fill="#64748b"/>
+</svg>

@@ -283,6 +283,15 @@ body {
 }
 
 /* Modern Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -303,6 +312,10 @@ body {
     opacity: 1;
     transform: translateX(0);
   }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
 }
 
 .animate-fade-in-up {
@@ -356,12 +369,70 @@ body {
     padding-right: 0.5rem;
   }
   
-  /* Reduce button padding for very small screens */
-  @media (max-width: 380px) {
-    .btn-primary,
-    .modern-input {
-      font-size: 0.75rem;
-    }
+  /* Enhanced button responsiveness for mobile */
+  .btn-primary,
+  .modern-input {
+    font-size: 0.75rem;
+    line-height: 1.2;
+  }
+  
+  /* Ensure buttons maintain readability on small screens */
+  .btn-primary span,
+  .text-cyan-400 span {
+    font-size: 0.75rem;
+    line-height: 1.1;
+  }
+}
+
+/* Specific mobile breakpoints for button text */
+@media (max-width: 380px) {
+  /* Very small screens - ultra compact mode */
+  .btn-primary,
+  .text-cyan-400 {
+    font-size: 0.7rem;
+    padding-left: 0.375rem;
+    padding-right: 0.375rem;
+  }
+  
+  .btn-primary span,
+  .text-cyan-400 span {
+    font-size: 0.7rem;
+    line-height: 1.0;
+  }
+}
+
+@media (max-width: 320px) {
+  /* iPhone SE and similar ultra-narrow screens */
+  .btn-primary,
+  .text-cyan-400 {
+    font-size: 0.65rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+  
+  .btn-primary span,
+  .text-cyan-400 span {
+    font-size: 0.65rem;
+    line-height: 0.95;
+  }
+  
+  /* Reduce gap between buttons on very small screens */
+  nav .flex.items-center.gap-1 {
+    gap: 0.25rem;
+  }
+}
+
+/* Medium mobile screens optimization */
+@media (min-width: 375px) and (max-width: 414px) {
+  .btn-primary,
+  .text-cyan-400 {
+    font-size: 0.8rem;
+  }
+  
+  .btn-primary span,
+  .text-cyan-400 span {
+    font-size: 0.8rem;
+    line-height: 1.1;
   }
 }
 
@@ -381,5 +452,100 @@ body {
   .logo-link:hover img,
   .logo-link:focus img {
     transform: none;
+  }
+}
+
+/* Game Page Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(0, 200, 255, 0.5);
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(0, 200, 255, 0.8);
+  }
+}
+
+@keyframes particle-float {
+  0% { 
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { 
+    transform: translateY(-100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Game Interface Specific Styles */
+.game-card {
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.game-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border-color: rgba(0, 200, 255, 0.5);
+}
+
+.mission-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.mission-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.mission-button:hover::before {
+  left: 100%;
+}
+
+/* Responsive adjustments for game pages */
+@media (max-width: 768px) {
+  .game-card {
+    margin-bottom: 1rem;
+  }
+  
+  .particle {
+    display: none; /* Hide particles on mobile for performance */
   }
 }
