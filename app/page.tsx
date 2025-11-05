@@ -116,32 +116,32 @@ function ModernNavigation() {
                   authButtons.primaryLabel
                 )}
               </span>
-            </Link>
-            {/* Secondary Auth button - Enhanced mobile responsiveness */}
-            <Link
-              href={authButtons.secondaryRoute}
-              className={`btn-primary px-2 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2.5 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm md:text-base min-h-[36px] sm:min-h-[40px] md:min-h-[44px] flex items-center justify-center text-center leading-tight ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              style={{
-                minWidth: authButtons.secondaryLabel === 'Team Login' ? '90px' : 
-                         authButtons.secondaryLabel === 'Register Now' ? '100px' : '90px'
-              }}
-            >
-              <span className="block">
-                {authButtons.secondaryLabel === 'Team Login' ? (
-                  <>
-                    <span className="block sm:inline">Team</span>
-                    <span className="block sm:inline sm:ml-1">Login</span>
-                  </>
-                ) : authButtons.secondaryLabel === 'Register Now' ? (
-                  <>
-                    <span className="block sm:inline">Register</span>
-                    <span className="block sm:inline sm:ml-1">Now</span>
-                  </>
-                ) : (
-                  authButtons.secondaryLabel
-                )}
-              </span>
-            </Link>
+</Link>
+{/* Secondary Auth button - Enhanced mobile responsiveness */}
+<Link
+  href={authButtons.secondaryRoute}
+  className={`btn-primary px-2 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2.5 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm md:text-base min-h-[36px] sm:min-h-[40px] md:min-h-[44px] flex items-center justify-center text-center leading-tight ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+  style={{
+    minWidth: authButtons.secondaryLabel === 'Team Login' ? '90px' : 
+             authButtons.secondaryLabel === 'Register Now' ? '100px' : '90px'
+  }}
+>
+  <span className="block">
+    {authButtons.secondaryLabel === 'Team Login' ? (
+      <>
+        <span className="block sm:inline">Team</span>
+        <span className="block sm:inline sm:ml-1">Login</span>
+      </>
+    ) : authButtons.secondaryLabel === 'Register Now' ? (
+      <>
+        <span className="block sm:inline">Register</span>
+        <span className="block sm:inline sm:ml-1">Now</span>
+      </>
+    ) : (
+      authButtons.secondaryLabel
+    )}
+  </span>
+</Link>
           </div>
         </div>
       </div>
@@ -185,21 +185,21 @@ function ModernHeroSection() {
 
 // Event Plan Component
 function EventPlanComponent() {
-  const events = [
+  type EventItem = {
+    date: string;
+    month: string;
+    title: string;
+    time?: string;
+    location?: string;
+  };
+
+  const events: EventItem[] = [
     {
-      date: "08",
+      date: "09",
       month: "NOV",
       title: "Registration Deadline",
       time: "11:59 PM",
       location: "Dig the data website",
-    },
-
-    {
-      date: "10",
-      month: "NOV",
-      title: "Preliminary Round",
-      time: "4.00pm - 6.00 pm",
-      location: "AC-101, AC-116, AC-104",
     },
     {
       date: "11",

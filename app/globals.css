@@ -368,14 +368,22 @@ body {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
   }
-  
-  /* Enhanced button responsiveness for mobile */
+
+  /* Ensure registration/button text fits and is readable on small screens */
   .btn-primary,
   .modern-input {
     font-size: 0.75rem;
     line-height: 1.2;
   }
-  
+
+  .btn-primary {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   /* Ensure buttons maintain readability on small screens */
   .btn-primary span,
   .text-cyan-400 span {
@@ -398,6 +406,19 @@ body {
   .text-cyan-400 span {
     font-size: 0.7rem;
     line-height: 1.0;
+  }
+
+  /* Reduce button padding for very small screens */
+  .btn-primary,
+  .modern-input {
+    font-size: 0.7rem;
+  }
+  
+  /* Ensure Register Now button has adequate space */
+  .btn-primary {
+    min-width: 90px;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 }
 
