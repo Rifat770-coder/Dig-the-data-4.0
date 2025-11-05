@@ -24,7 +24,7 @@ interface AuthModeProviderProps {
 }
 
 export function AuthModeProvider({ children }: AuthModeProviderProps) {
-  const [authMode, setAuthModeState] = useState<AuthMode>('team-login');
+  const [authMode, setAuthModeState] = useState<AuthMode>('registration');
   const [isLoading, setIsLoading] = useState(true);
 
   // Load auth mode from localStorage on mount

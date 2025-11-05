@@ -246,7 +246,7 @@ export async function getAuthMode(): Promise<AuthMode> {
       AUTH_SETTINGS_DOC_ID
     );
     
-    return (response as unknown as AuthSettings).mode || 'team-login';
+    return (response as unknown as AuthSettings).mode || 'registration';
   } catch (error) {
     console.error('Error fetching auth mode from Appwrite:', error);
     
@@ -260,7 +260,7 @@ export async function getAuthMode(): Promise<AuthMode> {
       console.error('localStorage fallback failed:', storageError);
     }
   
-    return 'team-login';
+    return 'registration';
   }
 }
 
@@ -358,7 +358,7 @@ export async function initializeAuthSettings(): Promise<void> {
         AUTH_SETTINGS_DOC_ID,
         {
           $id: AUTH_SETTINGS_DOC_ID,
-          mode: 'team-login' as AuthMode,
+          mode: 'registration' as AuthMode,
           updatedAt: new Date().toISOString(),
           updatedBy: 'system'
         }
