@@ -57,6 +57,18 @@ export class AuthPermissionError extends Error {
   }
 }
 
+// Interface for rate limit data
+interface RateLimitData {
+  count: number;
+  firstAttempt: number;
+  lastAttempt: number;
+}
+
+// Interface for lockout data
+interface LockoutData {
+  timestamp: number;
+}
+
 /**
  * Check if user is currently locked out due to too many failed attempts
  */
@@ -66,7 +78,7 @@ function isLockedOut(): boolean {
   const lockoutData = localStorage.getItem(LOCKOUT_KEY);
   if (!lockoutData) return false;
   
-  const { timestamp } = JSON.parse(lockoutData);
+  const { timestamp }: LockoutData = JSON.parse(lockoutData);
   const now = Date.now();
   
   if (now - timestamp > LOCKOUT_DURATION) {
@@ -90,7 +102,7 @@ function recordFailedAttempt(): void {
   
   let attempts = 1;
   if (rateLimitData) {
-    const { count, firstAttempt } = JSON.parse(rateLimitData);
+    const { count, firstAttempt }: RateLimitData = JSON.parse(rateLimitData);
     // Reset counter if more than lockout duration has passed
     if (now - firstAttempt > LOCKOUT_DURATION) {
       attempts = 1;
@@ -99,17 +111,18 @@ function recordFailedAttempt(): void {
     }
   }
   
-  localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify({
+  const newRateLimitData: RateLimitData = {
     count: attempts,
     firstAttempt: rateLimitData ? JSON.parse(rateLimitData).firstAttempt : now,
     lastAttempt: now
-  }));
+  };
+  
+  localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(newRateLimitData));
   
   // Lock out user if max attempts reached
   if (attempts >= MAX_LOGIN_ATTEMPTS) {
-    localStorage.setItem(LOCKOUT_KEY, JSON.stringify({
-      timestamp: now
-    }));
+    const lockoutData: LockoutData = { timestamp: now };
+    localStorage.setItem(LOCKOUT_KEY, JSON.stringify(lockoutData));
   }
 }
 
@@ -132,7 +145,7 @@ function getRemainingLockoutTime(): number {
   const lockoutData = localStorage.getItem(LOCKOUT_KEY);
   if (!lockoutData) return 0;
   
-  const { timestamp } = JSON.parse(lockoutData);
+  const { timestamp }: LockoutData = JSON.parse(lockoutData);
   const now = Date.now();
   const remaining = LOCKOUT_DURATION - (now - timestamp);
   
@@ -208,6 +221,20 @@ function sanitizeString(input: string): string {
   return input.trim().replace(/[<>]/g, '');
 }
 
+// Interface for Appwrite error
+interface AppwriteError {
+  code?: number;
+  message?: string;
+  type?: string;
+}
+
+/**
+ * Type guard for Appwrite errors
+ */
+function isAppwriteError(error: unknown): error is AppwriteError {
+  return typeof error === 'object' && error !== null && ('code' in error || 'message' in error);
+}
+
 /**
  * Get current authentication mode from backend (with localStorage fallback)
  */
@@ -262,11 +289,6 @@ export async function updateAuthMode(mode: AuthMode, updatedBy?: string): Promis
         updateData
       );
     } catch (updateError: unknown) {
-      // Narrow unknown to an Appwrite-like error object
-      function isAppwriteError(err: unknown): err is { code?: number; message?: string } {
-        return typeof err === 'object' && err !== null && ('code' in (err as object) || 'message' in (err as object));
-      }
-
       // If document doesn't exist, create it
       if (isAppwriteError(updateError) && updateError.code === 404) {
         await databases.createDocument(
@@ -289,12 +311,10 @@ export async function updateAuthMode(mode: AuthMode, updatedBy?: string): Promis
       throw error;
     }
     
-    // Narrow unknown to an object with optional code/message before accessing properties
-    if (typeof error === 'object' && error !== null) {
-      const errObj = error as { code?: number; message?: string };
-      
+    // Type guard and error handling
+    if (isAppwriteError(error)) {
       // If Appwrite is not available or collection doesn't exist, use localStorage as fallback
-      if (errObj.code === 404 || errObj.message?.includes('Collection') || errObj.message?.includes('Database')) {
+      if (error.code === 404 || error.message?.includes('Collection') || error.message?.includes('Database')) {
         console.warn('Appwrite collection not available, using localStorage fallback');
         try {
           localStorage.setItem('dig-the-data-auth-mode', mode);
@@ -305,11 +325,11 @@ export async function updateAuthMode(mode: AuthMode, updatedBy?: string): Promis
         }
       }
       
-      if (errObj.code === 401 || errObj.code === 403) {
+      if (error.code === 401 || error.code === 403) {
         throw new AuthPermissionError('Insufficient permissions to update authentication mode');
       }
       
-      if (typeof errObj.code === 'number' && errObj.code >= 500) {
+      if (typeof error.code === 'number' && error.code >= 500) {
         throw new AuthNetworkError('Server error occurred while updating authentication mode');
       }
     }
@@ -368,8 +388,15 @@ export interface TeamDocument {
   teamName: string;
   teamCode: string;
   password: string;
-  // allow additional fields without using `any`
   [key: string]: unknown;
+}
+
+/**
+ * Interface for Appwrite list response
+ */
+interface ListDocumentsResponse {
+  documents: TeamDocument[];
+  total: number;
 }
 
 /**
@@ -390,10 +417,10 @@ export async function validateTeamLogin(credentials: TeamLoginCredentials): Prom
     // Query Appwrite database for teams collection
     try {
       // Fetch documents from the "teams" collection
-      const response = (await databases.listDocuments(
+      const response = await databases.listDocuments(
         DATABASE_ID,
         'teams'
-      )) as unknown as { documents?: TeamDocument[] };
+      ) as unknown as ListDocumentsResponse;
       
       if (!response || !Array.isArray(response.documents) || response.documents.length === 0) {
         // Team not found
@@ -402,8 +429,8 @@ export async function validateTeamLogin(credentials: TeamLoginCredentials): Prom
       
       // Try to find a matching team by teamCode and teamName (case-insensitive)
       const team = response.documents.find(d =>
-        (d.teamCode as string).toLowerCase().trim() === sanitizedCredentials.teamCode.toLowerCase().trim()
-        && (d.teamName as string).toLowerCase().trim() === sanitizedCredentials.teamName.toLowerCase().trim()
+        String(d.teamCode).toLowerCase().trim() === sanitizedCredentials.teamCode.toLowerCase().trim()
+        && String(d.teamName).toLowerCase().trim() === sanitizedCredentials.teamName.toLowerCase().trim()
       );
       
       if (!team) {
@@ -412,7 +439,7 @@ export async function validateTeamLogin(credentials: TeamLoginCredentials): Prom
       }
       
       // Verify password matches
-      const passwordMatch = (team.password as string) === sanitizedCredentials.password;
+      const passwordMatch = String(team.password) === sanitizedCredentials.password;
       
       // Add a small delay to prevent timing attacks
       await new Promise(resolve => setTimeout(resolve, Math.random() * 100 + 50));
@@ -420,11 +447,8 @@ export async function validateTeamLogin(credentials: TeamLoginCredentials): Prom
       return passwordMatch;
       
     } catch (dbError: unknown) {
-      // Normalize unknown error to an object with optional code/message
-      const err = dbError as { code?: number; message?: string } | null;
-
       // If teams collection doesn't exist yet, log warning and return false
-      if (err && (err.code === 404 || (typeof err.message === 'string' && err.message.includes('Collection')))) {
+      if (isAppwriteError(dbError) && (dbError.code === 404 || dbError.message?.includes('Collection'))) {
         console.warn('Teams collection not found in Appwrite. Please create the collection first.');
         console.warn('Collection ID should be: teams');
         console.warn('Required attributes: teamName (string), teamCode (string), password (string)');
@@ -441,6 +465,18 @@ export async function validateTeamLogin(credentials: TeamLoginCredentials): Prom
     console.error('Error validating team login:', error);
     throw new AuthNetworkError('Failed to validate team credentials due to a system error');
   }
+}
+
+/**
+ * Interface for session data
+ */
+interface TeamSessionData {
+  sessionId: string;
+  teamName: string;
+  teamCode: string;
+  loginTime: string;
+  expiresAt: string;
+  isValid: boolean;
 }
 
 /**
@@ -471,7 +507,7 @@ export async function createTeamSession(credentials: TeamLoginCredentials): Prom
     if (!isValid) {
       recordFailedAttempt();
       const rateLimitData = localStorage.getItem(RATE_LIMIT_KEY);
-      const attempts = rateLimitData ? JSON.parse(rateLimitData).count : 1;
+      const attempts = rateLimitData ? (JSON.parse(rateLimitData) as RateLimitData).count : 1;
       const remaining = MAX_LOGIN_ATTEMPTS - attempts;
       
       if (remaining > 0) {
@@ -495,7 +531,7 @@ export async function createTeamSession(credentials: TeamLoginCredentials): Prom
     const loginTime = new Date().toISOString();
     
     // Sanitize data before storing
-    const sessionData = {
+    const sessionData: TeamSessionData = {
       sessionId,
       teamName: sanitizeString(credentials.teamName),
       teamCode: sanitizeString(credentials.teamCode),
@@ -547,14 +583,14 @@ export async function createTeamSession(credentials: TeamLoginCredentials): Prom
 /**
  * Get current team session
  */
-export function getTeamSession(): { sessionId: string; teamName: string; teamCode: string; loginTime: string; expiresAt: string } | null {
+export function getTeamSession(): TeamSessionData | null {
   try {
     if (typeof window === 'undefined') return null;
     
     const session = localStorage.getItem('teamSession');
     if (!session) return null;
     
-    const sessionData = JSON.parse(session);
+    const sessionData = JSON.parse(session) as TeamSessionData;
     
     // Check if session has expired
     if (sessionData.expiresAt && new Date(sessionData.expiresAt) < new Date()) {

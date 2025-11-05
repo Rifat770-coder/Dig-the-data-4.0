@@ -312,12 +312,23 @@ function EventPlanComponent() {
   );
 }
 
+// Type definition for event structure
+interface EventItem {
+  id: number;
+  title: string;
+  year: string;
+  image: string;
+  participants: string;
+  description: string;
+  highlights: string[];
+}
+
 // Enhanced Previous Events Gallery Component with Slide System
 function PreviousEventsGallery() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const events = [
+  const events: EventItem[] = [
     {
       id: 1,
       title: "Dig The Data 3.0",
@@ -474,7 +485,6 @@ function PreviousEventsGallery() {
   // Auto-slide functionality
   useEffect(() => {
     const interval = setInterval(() => {
-      // Advance slide using functional update to avoid stale closures and external function dependency
       setCurrentSlide((prev) => (prev + 1) % events.length);
     }, 5000); // Change slide every 5 seconds
 

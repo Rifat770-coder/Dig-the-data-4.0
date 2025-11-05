@@ -378,7 +378,8 @@ export default function LeaderboardPage() {
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <div className="text-4xl font-bold text-white">{team.score || 0}</div>
-                      <div className="text-xs text-gray-400 uppercase tracking-wider">points</div>
+                      <div className="text-xs text-gray-400 uppercase tracking-wider">Total Points</div>
+                      <div className="text-xs text-cyan-300 mt-1">(Indoor + Outdoor Combined)</div>
                     </div>
                   </div>
                 </div>

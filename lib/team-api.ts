@@ -11,7 +11,9 @@ export interface Team {
   teamCode: string;
   password: string;
   memberIds?: string[]; // Array of user IDs
-  score?: number; // Team's current score
+  score?: number; // Team's total score (indoor + outdoor)
+  indoorScore?: number; // Indoor mission score
+  outdoorScore?: number; // Outdoor mission score
   $createdAt?: string; // Appwrite built-in field
   $updatedAt?: string; // Appwrite built-in field
 }
@@ -129,6 +131,40 @@ async function checkAdminPermission(): Promise<void> {
   if (!isAdmin) {
     throw new TeamPermissionError('Admin privileges required');
   }
+}
+
+/**
+ * Get member names by their IDs
+ * @param memberIds Array of user document IDs
+ * @returns Array of member names (or "Unknown User" for missing users)
+ */
+export async function getMemberNamesByIds(memberIds: string[]): Promise<string[]> {
+  if (!memberIds || memberIds.length === 0) {
+    return [];
+  }
+
+  const memberNames: string[] = [];
+
+  // Fetch each user document individually
+  for (const memberId of memberIds) {
+    try {
+      const userDoc = await databases.getDocument(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        memberId
+      );
+      
+      // Extract name from user document
+      const userName = (userDoc.name as string) || 'Unknown User';
+      memberNames.push(userName);
+    } catch {
+      // If user document not found, silently add placeholder
+      // This is expected behavior when a user document doesn't exist
+      memberNames.push('Unknown User');
+    }
+  }
+
+  return memberNames;
 }
 
 /**
@@ -492,6 +528,82 @@ export async function updateOwnTeamScore(teamId: string, score: number): Promise
       throw error;
     }
     throw new Error(`Failed to update team score: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Update indoor mission score and recalculate total
+ */
+export async function updateIndoorScore(teamId: string, indoorScore: number): Promise<Team> {
+  try {
+    if (typeof indoorScore !== 'number' || indoorScore < 0) {
+      throw new TeamValidationError('Indoor score must be a non-negative number', 'indoorScore');
+    }
+    
+    // Get current team data to get outdoor score
+    const team = await databases.getDocument(
+      DATABASE_ID,
+      TEAMS_COLLECTION_ID,
+      teamId
+    ) as unknown as Team;
+    
+    const outdoorScore = team.outdoorScore || 0;
+    const totalScore = indoorScore + outdoorScore;
+    
+    const response = await databases.updateDocument(
+      DATABASE_ID,
+      TEAMS_COLLECTION_ID,
+      teamId,
+      { 
+        indoorScore,
+        score: totalScore
+      }
+    );
+    
+    return response as unknown as Team;
+  } catch (error) {
+    if (error instanceof TeamValidationError) {
+      throw error;
+    }
+    throw new Error(`Failed to update indoor score: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Update outdoor mission score and recalculate total
+ */
+export async function updateOutdoorScore(teamId: string, outdoorScore: number): Promise<Team> {
+  try {
+    if (typeof outdoorScore !== 'number' || outdoorScore < 0) {
+      throw new TeamValidationError('Outdoor score must be a non-negative number', 'outdoorScore');
+    }
+    
+    // Get current team data to get indoor score
+    const team = await databases.getDocument(
+      DATABASE_ID,
+      TEAMS_COLLECTION_ID,
+      teamId
+    ) as unknown as Team;
+    
+    const indoorScore = team.indoorScore || 0;
+    const totalScore = indoorScore + outdoorScore;
+    
+    const response = await databases.updateDocument(
+      DATABASE_ID,
+      TEAMS_COLLECTION_ID,
+      teamId,
+      { 
+        outdoorScore,
+        score: totalScore
+      }
+    );
+    
+    return response as unknown as Team;
+  } catch (error) {
+    if (error instanceof TeamValidationError) {
+      throw error;
+    }
+    throw new Error(`Failed to update outdoor score: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

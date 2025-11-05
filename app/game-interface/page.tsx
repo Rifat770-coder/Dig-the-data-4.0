@@ -72,9 +72,8 @@ export default function GameInterface() {
   const handleMissionStart = (missionType: 'indoor' | 'outdoor') => {
     if (missionType === 'indoor') {
       window.location.href = '/indoor-mission';
-    } else {
-      console.log(`Starting ${missionType} mission`);
-      // Add outdoor mission logic here if needed
+    } else if (missionType === 'outdoor') {
+      window.location.href = '/outdoor-mission';
     }
   };
 

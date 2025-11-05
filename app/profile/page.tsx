@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { account, databases, storage, DATABASE_ID, USERS_COLLECTION_ID, PROFILE_PICTURES_BUCKET_ID, getProfilePictureUrl, getBkashReceiptUrl } from '@/lib/appwrite';
 import { Models, Query, ID } from 'appwrite';
 import { getTeamSession, isTeamSessionValid, clearTeamSession } from '@/lib/auth-api';
-import { getTeamByCode, Team } from '@/lib/team-api';
+import { getTeamByCode, Team, getMemberNamesByIds } from '@/lib/team-api';
 
 interface UserData {
   name: string;
@@ -31,6 +31,7 @@ export default function ProfilePage() {
   const [uploadingNewPicture, setUploadingNewPicture] = useState(false);
   const [isTeamMode, setIsTeamMode] = useState(false);
   const [teamData, setTeamData] = useState<Team | null>(null);
+  const [memberNames, setMemberNames] = useState<string[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -67,6 +68,14 @@ export default function ProfilePage() {
             const team = await getTeamByCode(teamSession.teamCode);
             if (team) {
               setTeamData(team);
+              
+              // Fetch member names if memberIds exist
+              if (team.memberIds && team.memberIds.length > 0) {
+                const names = await getMemberNamesByIds(team.memberIds);
+                setMemberNames(names);
+              } else {
+                setMemberNames([]);
+              }
             } else {
               console.error('Team not found in database');
               router.push('/login');
@@ -355,20 +364,36 @@ export default function ProfilePage() {
                     {/* Password */}
                     <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
                       <label className="text-sm text-yellow-400 font-medium mb-2 block">Password</label>
-                      <p className="text-white text-lg font-mono">{'•'.repeat(teamData.password.length)}</p>
+                      <p className="text-white text-lg font-mono font-semibold">{teamData.password}</p>
                     </div>
 
-                    {/* Score */}
+                    {/* Total Score */}
                     <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
-                      <label className="text-sm text-yellow-400 font-medium mb-2 block">Current Score</label>
-                      <p className="text-white text-lg font-semibold">{teamData.score || 0} points</p>
+                      <label className="text-sm text-green-400 font-medium mb-2 block">Total Score</label>
+                      <p className="text-white text-2xl font-bold">{teamData.score || 0} points</p>
+                      <p className="text-xs text-cyan-300 mt-1">(Indoor + Outdoor Combined)</p>
                     </div>
 
                     {/* Team Members */}
                     {teamData.memberIds && teamData.memberIds.length > 0 && (
                       <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 md:col-span-2">
-                        <label className="text-sm text-yellow-400 font-medium mb-2 block">Team Members</label>
-                        <p className="text-white text-lg font-semibold">{teamData.memberIds.length} members</p>
+                        <label className="text-sm text-yellow-400 font-medium mb-2 block">
+                          Team Members ({teamData.memberIds.length})
+                        </label>
+                        {memberNames.length > 0 ? (
+                          <div className="space-y-2">
+                            {memberNames.map((name, index) => (
+                              <div key={index} className="flex items-center gap-2 text-white">
+                                <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                                </svg>
+                                <span className="text-lg">{name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-400 text-sm">Loading member names...</p>
+                        )}
                       </div>
                     )}
 

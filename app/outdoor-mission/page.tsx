@@ -2,16 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, Clock, Award, ArrowLeft, Lightbulb } from 'lucide-react';
+import { CheckCircle2, Clock, Award, ArrowLeft, MapPin } from 'lucide-react';
 import { getTeamSession, isTeamSessionValid } from '@/lib/auth-api';
 
 // Question type definition
 interface Question {
   id: string;
   question: string;
-  correctAnswer: string; // Changed to string for text answers
+  correctAnswer: string; // Text answers
   points: number;
-  hint?: string; // Optional hint
 }
 
 // Answer state type
@@ -23,26 +22,23 @@ interface AnswerState {
   };
 }
 
-export default function IndoorMissionPage() {
+export default function OutdoorMissionPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answerStates, setAnswerStates] = useState<AnswerState>({});
   const [loading, setLoading] = useState(true);
   const [userAnswers, setUserAnswers] = useState<{ [key: string]: string }>({});
-  const [showHint, setShowHint] = useState<{ [key: string]: boolean }>({});
   const [totalScore, setTotalScore] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [teamCode, setTeamCode] = useState<string | null>(null);
   const [isTeamLoggedIn, setIsTeamLoggedIn] = useState(false);
-  const [showHintModal, setShowHintModal] = useState(false);
-  const [pendingHintQuestionId, setPendingHintQuestionId] = useState<string | null>(null);
 
   const loadAnswerStates = (teamCodeParam?: string, questionsParam?: Question[]) => {
     try {
       // Use team-specific storage key if team is logged in
       const storageKey = teamCodeParam 
-        ? `indoorMissionAnswers_${teamCodeParam}` 
-        : 'indoorMissionAnswers';
+        ? `outdoorMissionAnswers_${teamCodeParam}` 
+        : 'outdoorMissionAnswers';
       
       const stored = localStorage.getItem(storageKey);
       if (stored) {
@@ -61,20 +57,6 @@ export default function IndoorMissionPage() {
             if (question) score += question.points;
           }
         });
-        
-        // Load hint usage and deduct points
-        const hintsKey = teamCodeParam 
-          ? `indoorMissionHints_${teamCodeParam}` 
-          : 'indoorMissionHints';
-        const storedHints = localStorage.getItem(hintsKey);
-        if (storedHints) {
-          const hintsUsed = JSON.parse(storedHints);
-          setShowHint(hintsUsed);
-          
-          // Deduct 2 points for each hint used
-          const hintCount = Object.keys(hintsUsed).length;
-          score = Math.max(0, score - (hintCount * 2));
-        }
         
         setCorrectAnswers(correct);
         setTotalScore(score);
@@ -127,7 +109,7 @@ export default function IndoorMissionPage() {
   const loadQuestions = (): Question[] => {
     try {
       // Try to load questions from localStorage (set by admin)
-      const storedQuestions = localStorage.getItem('indoorMissionQuestions');
+      const storedQuestions = localStorage.getItem('outdoorMissionQuestions');
       
       if (storedQuestions) {
         const parsed = JSON.parse(storedQuestions);
@@ -139,38 +121,33 @@ export default function IndoorMissionPage() {
         const defaultQuestions: Question[] = [
           {
             id: 'q1',
-            question: 'What is the capital of France?',
-            correctAnswer: 'Paris',
-            points: 10,
-            hint: 'It\'s known as the City of Light'
+            question: 'What is the name of the tallest building on campus?',
+            correctAnswer: 'Main Tower',
+            points: 15
           },
           {
             id: 'q2',
-            question: 'Which programming language is known as the "language of the web"?',
-            correctAnswer: 'JavaScript',
-            points: 10,
-            hint: 'Often abbreviated as JS'
+            question: 'How many benches are there in the central garden?',
+            correctAnswer: '12',
+            points: 15
           },
           {
             id: 'q3',
-            question: 'What does API stand for?',
-            correctAnswer: 'Application Programming Interface',
-            points: 10,
-            hint: 'It allows different software applications to communicate'
+            question: 'What color is the main gate?',
+            correctAnswer: 'Blue',
+            points: 15
           },
           {
             id: 'q4',
-            question: 'Which data structure uses LIFO (Last In First Out) principle?',
-            correctAnswer: 'Stack',
-            points: 10,
-            hint: 'Think of a stack of plates'
+            question: 'What is written on the welcome sign at the entrance?',
+            correctAnswer: 'Welcome to Adventure',
+            points: 15
           },
           {
             id: 'q5',
-            question: 'What is the time complexity of binary search?',
-            correctAnswer: 'O(log n)',
-            points: 10,
-            hint: 'It divides the search space in half with each step'
+            question: 'How many trees are planted near the parking lot?',
+            correctAnswer: '8',
+            points: 15
           }
         ];
         setQuestions(defaultQuestions);
@@ -187,28 +164,38 @@ export default function IndoorMissionPage() {
 
   const syncScoreToAppwrite = async (teamCodeParam: string, score: number) => {
     try {
-      // Get outdoor score from localStorage
-      const outdoorStorageKey = `outdoorMissionAnswers_${teamCodeParam}`;
-      const outdoorStored = localStorage.getItem(outdoorStorageKey);
-      let outdoorScore = 0;
+      // Get indoor score from localStorage
+      const indoorStorageKey = `indoorMissionAnswers_${teamCodeParam}`;
+      const indoorStored = localStorage.getItem(indoorStorageKey);
+      let indoorScore = 0;
       
-      if (outdoorStored) {
-        const parsed = JSON.parse(outdoorStored);
-        // Load outdoor questions to calculate score
-        const storedOutdoorQuestions = localStorage.getItem('outdoorMissionQuestions');
-        if (storedOutdoorQuestions) {
-          const outdoorQuestions = JSON.parse(storedOutdoorQuestions);
+      if (indoorStored) {
+        const parsed = JSON.parse(indoorStored);
+        // Load indoor questions to calculate score
+        const storedIndoorQuestions = localStorage.getItem('indoorMissionQuestions');
+        if (storedIndoorQuestions) {
+          const indoorQuestions = JSON.parse(storedIndoorQuestions);
+          
+          // Also check for hints to deduct points
+          const hintsKey = `indoorMissionHints_${teamCodeParam}`;
+          const storedHints = localStorage.getItem(hintsKey);
+          const hintsUsed = storedHints ? JSON.parse(storedHints) : {};
+          
           Object.keys(parsed).forEach((key) => {
             if (parsed[key].correct) {
-              const question = outdoorQuestions.find((q: { id: string; points: number }) => q.id === key);
-              if (question) outdoorScore += question.points;
+              const question = indoorQuestions.find((q: { id: string; points: number }) => q.id === key);
+              if (question) indoorScore += question.points;
             }
           });
+          
+          // Deduct 2 points for each hint used
+          const hintCount = Object.keys(hintsUsed).length;
+          indoorScore = Math.max(0, indoorScore - (hintCount * 2));
         }
       }
       
       // Calculate combined total score
-      const totalScore = score + outdoorScore;
+      const totalScore = indoorScore + score;
       
       // Update team's total score in Appwrite
       const { getTeamByCode, updateOwnTeamScore } = await import('@/lib/team-api');
@@ -216,7 +203,7 @@ export default function IndoorMissionPage() {
       
       if (team && team.$id) {
         await updateOwnTeamScore(team.$id, totalScore);
-        console.log(`Synced indoor:${score} + outdoor:${outdoorScore} = total:${totalScore} points to team ${teamCodeParam}`);
+        console.log(`Synced indoor:${indoorScore} + outdoor:${score} = total:${totalScore} points to team ${teamCodeParam}`);
       }
     } catch (error) {
       console.error('Error syncing score to Appwrite:', error);
@@ -262,7 +249,7 @@ export default function IndoorMissionPage() {
 
     setAnswerStates(newAnswerStates);
 
-    // Recalculate total score from scratch (to account for hints)
+    // Recalculate total score from scratch
     if (isCorrect) {
       setCorrectAnswers(prev => prev + 1);
       
@@ -275,17 +262,6 @@ export default function IndoorMissionPage() {
           if (q) newTotalScore += q.points;
         }
       });
-      
-      // Deduct points for hints used
-      const hintsKey = teamCode 
-        ? `indoorMissionHints_${teamCode}` 
-        : 'indoorMissionHints';
-      const storedHints = localStorage.getItem(hintsKey);
-      if (storedHints) {
-        const hintsUsed = JSON.parse(storedHints);
-        const hintCount = Object.keys(hintsUsed).length;
-        newTotalScore = Math.max(0, newTotalScore - (hintCount * 2));
-      }
       
       setTotalScore(newTotalScore);
       
@@ -304,60 +280,9 @@ export default function IndoorMissionPage() {
 
     // Save to localStorage with team-specific key
     const storageKey = teamCode 
-      ? `indoorMissionAnswers_${teamCode}` 
-      : 'indoorMissionAnswers';
+      ? `outdoorMissionAnswers_${teamCode}` 
+      : 'outdoorMissionAnswers';
     localStorage.setItem(storageKey, JSON.stringify(newAnswerStates));
-  };
-
-  const handleShowHint = (questionId: string) => {
-    setPendingHintQuestionId(questionId);
-    setShowHintModal(true);
-  };
-
-  const confirmShowHint = async () => {
-    if (!pendingHintQuestionId) return;
-
-    // Calculate new score after deduction
-    const newScore = Math.max(0, totalScore - 2);
-    
-    // Deduct 2 points from local score
-    setTotalScore(newScore);
-
-    // Show the hint
-    setShowHint(prev => ({
-      ...prev,
-      [pendingHintQuestionId]: true
-    }));
-
-    // Save hint usage to localStorage with team-specific key
-    const storageKey = teamCode 
-      ? `indoorMissionHints_${teamCode}` 
-      : 'indoorMissionHints';
-    
-    // Get existing hints
-    const existingHints = JSON.parse(localStorage.getItem(storageKey) || '{}');
-    existingHints[pendingHintQuestionId] = true;
-    localStorage.setItem(storageKey, JSON.stringify(existingHints));
-
-    // If team is logged in, sync the new score to Appwrite
-    if (isTeamLoggedIn && teamCode) {
-      try {
-        // Sync the new total score to Appwrite
-        await syncScoreToAppwrite(teamCode, newScore);
-        console.log(`Deducted 2 points from team ${teamCode}, new score: ${newScore}`);
-      } catch (error) {
-        console.error('Error deducting points from team:', error);
-      }
-    }
-
-    // Close modal and reset
-    setShowHintModal(false);
-    setPendingHintQuestionId(null);
-  };
-
-  const cancelShowHint = () => {
-    setShowHintModal(false);
-    setPendingHintQuestionId(null);
   };
 
   const getAnswerBoxClass = (questionId: string) => {
@@ -401,7 +326,7 @@ export default function IndoorMissionPage() {
               </Link>
               <div className="h-6 w-px bg-gray-700"></div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                Indoor Mission
+                Outdoor Mission
               </h1>
             </div>
             
@@ -412,7 +337,6 @@ export default function IndoorMissionPage() {
                   <div className="text-sm font-bold text-yellow-400 font-mono">{teamCode}</div>
                 </div>
               )}
-             
             </div>
           </div>
         </div>
@@ -424,17 +348,16 @@ export default function IndoorMissionPage() {
         <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-2xl p-6 mb-8">
           <div className="flex items-start gap-4">
             <div className="bg-cyan-500/20 p-3 rounded-lg">
-              <Lightbulb className="w-6 h-6 text-cyan-400" />
+              <MapPin className="w-6 h-6 text-cyan-400" />
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-white mb-2">Mission Objective</h2>
               <p className="text-gray-300 leading-relaxed">
-                Welcome to the Indoor Mission! Type your answers in the text boxes below to test your knowledge and skills. 
-                Each correct answer earns you points. Use the <span className="text-yellow-400 font-semibold">Hint</span> button if you need help, 
-                but be aware that using a hint will <span className="text-red-400 font-semibold">deduct 2 points</span> from your score. 
+                Welcome to the Outdoor Mission! Explore the real world, find clues, and answer the questions based on your observations. 
+                Type your answers in the text boxes below. Each correct answer earns you points. 
                 Once you submit a correct answer, the box will turn 
                 <span className="text-green-400 font-semibold"> green </span> and you cannot change it. 
-                For incorrect answers, you can try again. Good luck!
+                For incorrect answers, you can try again. Good luck exploring!
               </p>
               {isTeamLoggedIn && teamCode && (
                 <div className="mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
@@ -486,7 +409,6 @@ export default function IndoorMissionPage() {
               const state = answerStates[question.id];
               const isCorrect = state?.correct;
               const userAnswer = userAnswers[question.id] || '';
-              const hintShown = showHint[question.id] || false;
 
               return (
                 <div
@@ -536,19 +458,6 @@ export default function IndoorMissionPage() {
                     />
                   </div>
 
-                  {/* Hint Display */}
-                  {hintShown && question.hint && !isCorrect && (
-                    <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
-                      <div className="flex items-start gap-2">
-                        <Lightbulb className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-yellow-400 font-medium text-sm mb-1">Hint:</p>
-                          <p className="text-gray-300 text-sm">{question.hint}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   {/* Action Buttons */}
                   {!isCorrect && (
                     <div className="flex gap-3">
@@ -563,16 +472,6 @@ export default function IndoorMissionPage() {
                       >
                         Submit Answer
                       </button>
-                      
-                      {question.hint && !hintShown && (
-                        <button
-                          onClick={() => handleShowHint(question.id)}
-                          className="px-6 py-3 rounded-xl font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30 transition-all duration-300"
-                        >
-                          <Lightbulb className="w-4 h-4 inline-block mr-2" />
-                          Hint
-                        </button>
-                      )}
                     </div>
                   )}
 
@@ -582,8 +481,7 @@ export default function IndoorMissionPage() {
                       <div className="flex items-center gap-2">
                         <Award className="w-5 h-5" />
                         <span className="font-medium">
-                          Excellent! You earned {question.points} points
-                          {hintShown && <span className="text-yellow-300"> (-2 for hint = {question.points - 2} net points)</span>}! 🎉
+                          Excellent! You earned {question.points} points! 🎉
                         </span>
                       </div>
                     </div>
@@ -602,7 +500,7 @@ export default function IndoorMissionPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-gray-800/50 rounded-xl p-4">
                   <div className="text-cyan-400 text-3xl font-bold mb-2">{totalScore}</div>
-                  <div className="text-gray-300">Indoor Mission Points</div>
+                  <div className="text-gray-300">Outdoor Mission Points</div>
                 </div>
                 <div className="bg-gray-800/50 rounded-xl p-4">
                   <div className="text-green-400 text-3xl font-bold mb-2">{correctAnswers}/{totalQuestions}</div>
@@ -616,26 +514,37 @@ export default function IndoorMissionPage() {
               
               {/* Total Combined Score Display */}
               {isTeamLoggedIn && teamCode && (() => {
-                // Calculate outdoor score from localStorage
-                const outdoorStorageKey = `outdoorMissionAnswers_${teamCode}`;
-                const outdoorStored = localStorage.getItem(outdoorStorageKey);
-                let outdoorScore = 0;
+                // Calculate indoor score from localStorage
+                const indoorStorageKey = `indoorMissionAnswers_${teamCode}`;
+                const indoorStored = localStorage.getItem(indoorStorageKey);
+                let indoorScore = 0;
                 
-                if (outdoorStored) {
-                  const parsed = JSON.parse(outdoorStored);
-                  const storedOutdoorQuestions = localStorage.getItem('outdoorMissionQuestions');
-                  if (storedOutdoorQuestions) {
-                    const outdoorQuestions = JSON.parse(storedOutdoorQuestions);
+                if (indoorStored) {
+                  const parsed = JSON.parse(indoorStored);
+                  const storedIndoorQuestions = localStorage.getItem('indoorMissionQuestions');
+                  if (storedIndoorQuestions) {
+                    const indoorQuestions = JSON.parse(storedIndoorQuestions);
+                    
+                    // Calculate indoor score with hint deductions
                     Object.keys(parsed).forEach((key) => {
                       if (parsed[key].correct) {
-                        const question = outdoorQuestions.find((q: { id: string; points: number }) => q.id === key);
-                        if (question) outdoorScore += question.points;
+                        const question = indoorQuestions.find((q: { id: string; points: number }) => q.id === key);
+                        if (question) indoorScore += question.points;
                       }
                     });
+                    
+                    // Deduct points for hints
+                    const hintsKey = `indoorMissionHints_${teamCode}`;
+                    const storedHints = localStorage.getItem(hintsKey);
+                    if (storedHints) {
+                      const hintsUsed = JSON.parse(storedHints);
+                      const hintCount = Object.keys(hintsUsed).length;
+                      indoorScore = Math.max(0, indoorScore - (hintCount * 2));
+                    }
                   }
                 }
                 
-                const combinedTotal = totalScore + outdoorScore;
+                const combinedTotal = indoorScore + totalScore;
                 
                 return (
                   <div className="mt-6 pt-6 border-t border-gray-700">
@@ -643,7 +552,7 @@ export default function IndoorMissionPage() {
                       <div className="text-green-300 text-sm font-medium mb-2">Team Total Score (Both Missions)</div>
                       <div className="text-5xl font-bold text-white mb-3">{combinedTotal}</div>
                       <div className="text-sm text-gray-300">
-                        Indoor: {totalScore} + Outdoor: {outdoorScore} = <span className="text-green-400 font-bold">{combinedTotal}</span>
+                        Indoor: {indoorScore} + Outdoor: {totalScore} = <span className="text-green-400 font-bold">{combinedTotal}</span>
                       </div>
                     </div>
                   </div>
@@ -653,59 +562,6 @@ export default function IndoorMissionPage() {
           </div>
         )}
       </main>
-
-      {/* Hint Confirmation Modal */}
-      {showHintModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 border border-yellow-500/30 rounded-2xl p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
-            <div className="text-center">
-              {/* Warning Icon */}
-              <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Lightbulb className="w-8 h-8 text-yellow-400" />
-              </div>
-
-              {/* Title */}
-              <h3 className="text-2xl font-bold text-white mb-3">
-                Use Hint?
-              </h3>
-
-              {/* Message */}
-              <p className="text-gray-300 mb-2">
-                Using a hint will deduct <span className="text-red-400 font-bold">2 points</span> from your score.
-              </p>
-              <p className="text-gray-400 text-sm mb-6">
-                Are you sure you want to continue?
-              </p>
-
-              {/* Buttons */}
-              <div className="flex gap-3">
-                <button
-                  onClick={cancelShowHint}
-                  className="flex-1 px-6 py-3 bg-gray-700 text-white rounded-xl hover:bg-gray-600 transition-all font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmShowHint}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-xl hover:from-yellow-400 hover:to-orange-400 transition-all font-semibold shadow-lg"
-                >
-                  Yes, I&apos;m Sure
-                </button>
-              </div>
-
-              {/* Note */}
-              <p className="text-xs text-gray-500 mt-4">
-                Current Score: <span className="text-cyan-400 font-semibold">{totalScore} points</span>
-                {totalScore >= 2 ? (
-                  <span className="text-gray-400"> → Will become {totalScore - 2} points</span>
-                ) : (
-                  <span className="text-red-400"> → Will become 0 points (minimum)</span>
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
