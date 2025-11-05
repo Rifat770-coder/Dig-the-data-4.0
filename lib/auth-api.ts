@@ -259,8 +259,7 @@ export async function getAuthMode(): Promise<AuthMode> {
     } catch (storageError) {
       console.error('localStorage fallback failed:', storageError);
     }
-    
-    // Return default mode if both Appwrite and localStorage fail
+  
     return 'team-login';
   }
 }
@@ -279,7 +278,6 @@ export async function updateAuthMode(mode: AuthMode, updatedBy?: string): Promis
       updatedAt: new Date().toISOString(),
       ...(sanitizedUpdatedBy && { updatedBy: sanitizedUpdatedBy })
     };
-
     try {
       // Try to update existing document
       await databases.updateDocument(
