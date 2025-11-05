@@ -24,7 +24,7 @@ export default function RegisterPage() {
   const router = useRouter();
   
   // Authentication mode hooks
-  const { authMode } = useAuthMode();
+  useAuthMode();
   const isRegistrationEnabled = useIsRegistrationEnabled();
   
   const [formData, setFormData] = useState<FormData>({

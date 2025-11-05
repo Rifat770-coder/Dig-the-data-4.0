@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 // Use native <img> for external Appwrite URLs to avoid Next.js image optimizer 500 errors
 import { Models } from 'appwrite';
 import { databases, DATABASE_ID, USERS_COLLECTION_ID, getProfilePictureUrl, getBkashReceiptUrl } from '@/lib/appwrite';
@@ -969,17 +970,19 @@ export default function AdminPage() {
                       
                       {/* Profile Picture (thumbnail) - use native img to avoid Next.js optimizer */}
                       <td className="p-4">
-                        {user.profilePictureId ? (
-                          (() => {
-                            const pictureUrl = getProfilePictureUrl(user.profilePictureId);
-                            return pictureUrl ? (
+                        {(() => {
+                          const pictureUrl = user.profilePictureId ? getProfilePictureUrl(user.profilePictureId) : undefined;
+                          if (pictureUrl) {
+                            return (
                               <button
-                                onClick={() => setViewingImage({ 
-                                  url: pictureUrl, 
-                                  title: `${user.name}'s Profile Picture` 
+                                onClick={() => setViewingImage({
+                                  url: pictureUrl,
+                                  title: `${user.name}'s Profile Picture`
                                 })}
                                 className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-cyan-500/50 hover:border-cyan-400 transition-all hover:scale-110 cursor-pointer group"
                               >
+                                {/* Use native img for Appwrite / external URLs */}
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={pictureUrl}
                                   alt={`${user.name}'s profile`}
@@ -991,21 +994,17 @@ export default function AdminPage() {
                                   </svg>
                                 </div>
                               </button>
-                            ) : (
-                              <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
-                                <svg className="w-6 h-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                                </svg>
-                              </div>
                             );
-                          })()
-                        ) : (
-                          <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
-                            <svg className="w-6 h-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                        )}
+                          }
+                          
+                          return (
+                            <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
+                              <svg className="w-6 h-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          );
+                        })()}
                       </td>
                       
                       <td className="p-4 text-white font-medium">{user.name}</td>
@@ -1020,20 +1019,23 @@ export default function AdminPage() {
                       
                       {/* bKash Receipt (thumbnail) - use native img for Appwrite URLs */}
                       <td className="p-4">
-                        {user.bkashTransactionPhotoId ? (
-                          (() => {
-                            const receiptUrl = getBkashReceiptUrl(user.bkashTransactionPhotoId);
-                            return receiptUrl ? (
+                        {(() => {
+                          const receiptUrl = user.bkashTransactionPhotoId ? getBkashReceiptUrl(user.bkashTransactionPhotoId) : undefined;
+                          if (receiptUrl) {
+                            return (
                               <button
-                                onClick={() => setViewingImage({ 
-                                  url: receiptUrl, 
-                                  title: `${user.name}'s bKash Receipt` 
+                                onClick={() => setViewingImage({
+                                  url: receiptUrl,
+                                  title: `${user.name}'s bKash Receipt`
                                 })}
-                                className="relative w-16 h-12 rounded overflow-hidden border-2 border-green-500/50 hover:border-green-400 transition-all hover:scale-110 cursor-pointer group"
+                                className="relative w-16 h-12 rounded overflow-hidden border-2 border-cyan-500/50 hover:border-cyan-400 transition-all group"
                               >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={receiptUrl}
                                   alt={`${user.name}'s bKash receipt`}
+                                  width={64}
+                                  height={48}
                                   className="w-full h-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -1042,17 +1044,17 @@ export default function AdminPage() {
                                   </svg>
                                 </div>
                               </button>
-                            ) : (
-                              <span className="text-gray-500 text-xs">Invalid receipt</span>
                             );
-                          })()
-                        ) : user.bkashTransactionId ? (
-                          <span className="text-gray-400 text-xs font-mono bg-gray-700/50 px-2 py-1 rounded">
-                            {user.bkashTransactionId}
-                          </span>
-                        ) : (
-                          <span className="text-gray-500 text-xs">No receipt</span>
-                        )}
+                          }
+                          if (user.bkashTransactionId) {
+                            return (
+                              <span className="text-gray-400 text-xs font-mono bg-gray-700/50 px-2 py-1 rounded">
+                                {user.bkashTransactionId}
+                              </span>
+                            );
+                          }
+                          return <span className="text-gray-500 text-xs">No receipt</span>;
+                        })()}
                       </td>
                       
                       <td className="p-4 text-gray-300 text-sm">
@@ -1259,17 +1261,23 @@ export default function AdminPage() {
               </svg>
             </button>
 
-            {/* Image Title */}
-            <div className="mb-4 text-center">
-              <h3 className="text-2xl font-bold text-white">{viewingImage.title}</h3>
-            </div>
-
-            {/* Image Container */}
-            <div className="w-full h-[70vh] bg-gray-900 rounded-lg overflow-auto border-2 border-cyan-500/50 flex items-center justify-center">
-              <img
+              <Image
                 src={viewingImage.url}
                 alt={viewingImage.title}
+                width={1600}
+                height={900}
                 className="max-h-[90%] max-w-[100%] object-contain"
+                unoptimized
+              />
+            {/* Image Container */}
+            <div className="w-full h-[70vh] bg-gray-900 rounded-lg overflow-auto border-2 border-cyan-500/50 flex items-center justify-center">
+              <Image
+                src={viewingImage.url}
+                alt={viewingImage.title}
+                width={1600}
+                height={900}
+                className="max-h-[90%] max-w-[100%] object-contain"
+                unoptimized
               />
             </div>
 

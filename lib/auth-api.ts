@@ -261,9 +261,14 @@ export async function updateAuthMode(mode: AuthMode, updatedBy?: string): Promis
         AUTH_SETTINGS_DOC_ID,
         updateData
       );
-    } catch (updateError: any) {
+    } catch (updateError: unknown) {
+      // Narrow unknown to an Appwrite-like error object
+      function isAppwriteError(err: unknown): err is { code?: number; message?: string } {
+        return typeof err === 'object' && err !== null && ('code' in (err as object) || 'message' in (err as object));
+      }
+
       // If document doesn't exist, create it
-      if (updateError?.code === 404) {
+      if (isAppwriteError(updateError) && updateError.code === 404) {
         await databases.createDocument(
           DATABASE_ID,
           AUTH_SETTINGS_COLLECTION_ID,
@@ -277,31 +282,36 @@ export async function updateAuthMode(mode: AuthMode, updatedBy?: string): Promis
         throw updateError;
       }
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating auth mode in Appwrite:', error);
     
     if (error instanceof AuthValidationError) {
       throw error;
     }
     
-    // If Appwrite is not available or collection doesn't exist, use localStorage as fallback
-    if (error?.code === 404 || error?.message?.includes('Collection') || error?.message?.includes('Database')) {
-      console.warn('Appwrite collection not available, using localStorage fallback');
-      try {
-        localStorage.setItem('dig-the-data-auth-mode', mode);
-        return; // Success with localStorage fallback
-      } catch (storageError) {
-        console.error('localStorage fallback failed:', storageError);
-        throw new AuthNetworkError('Failed to update authentication mode: both Appwrite and localStorage unavailable');
+    // Narrow unknown to an object with optional code/message before accessing properties
+    if (typeof error === 'object' && error !== null) {
+      const errObj = error as { code?: number; message?: string };
+      
+      // If Appwrite is not available or collection doesn't exist, use localStorage as fallback
+      if (errObj.code === 404 || errObj.message?.includes('Collection') || errObj.message?.includes('Database')) {
+        console.warn('Appwrite collection not available, using localStorage fallback');
+        try {
+          localStorage.setItem('dig-the-data-auth-mode', mode);
+          return; // Success with localStorage fallback
+        } catch (storageError) {
+          console.error('localStorage fallback failed:', storageError);
+          throw new AuthNetworkError('Failed to update authentication mode: both Appwrite and localStorage unavailable');
+        }
       }
-    }
-    
-    if (error?.code === 401 || error?.code === 403) {
-      throw new AuthPermissionError('Insufficient permissions to update authentication mode');
-    }
-    
-    if (error?.code >= 500) {
-      throw new AuthNetworkError('Server error occurred while updating authentication mode');
+      
+      if (errObj.code === 401 || errObj.code === 403) {
+        throw new AuthPermissionError('Insufficient permissions to update authentication mode');
+      }
+      
+      if (typeof errObj.code === 'number' && errObj.code >= 500) {
+        throw new AuthNetworkError('Server error occurred while updating authentication mode');
+      }
     }
     
     throw new AuthNetworkError('Failed to update authentication mode');
@@ -319,8 +329,9 @@ export async function initializeAuthSettings(): Promise<void> {
       AUTH_SETTINGS_COLLECTION_ID,
       AUTH_SETTINGS_DOC_ID
     );
-  } catch (error) {
+  } catch (err) {
     // Document doesn't exist, create it with default settings
+    console.warn('Auth settings document not found, creating default settings:', err);
     try {
       await databases.createDocument(
         DATABASE_ID,
@@ -350,6 +361,18 @@ export interface TeamLoginCredentials {
 }
 
 /**
+ * Team document stored in the database
+ */
+export interface TeamDocument {
+  $id?: string;
+  teamName: string;
+  teamCode: string;
+  password: string;
+  // allow additional fields without using `any`
+  [key: string]: unknown;
+}
+
+/**
  * Validate team login credentials against Appwrite database (enhanced version)
  */
 export async function validateTeamLogin(credentials: TeamLoginCredentials): Promise<boolean> {
@@ -366,39 +389,42 @@ export async function validateTeamLogin(credentials: TeamLoginCredentials): Prom
     
     // Query Appwrite database for teams collection
     try {
-      const { Query } = await import('appwrite');
-      const { TEAMS_COLLECTION_ID } = await import('./appwrite');
-      
-      // Search for team by team code (case-insensitive)
-      const response = await databases.listDocuments(
+      // Fetch documents from the "teams" collection
+      const response = (await databases.listDocuments(
         DATABASE_ID,
-        TEAMS_COLLECTION_ID,
-        [
-          Query.equal('teamCode', [sanitizedCredentials.teamCode.toUpperCase()])
-        ]
-      );
+        'teams'
+      )) as unknown as { documents?: TeamDocument[] };
       
-      if (response.documents.length === 0) {
+      if (!response || !Array.isArray(response.documents) || response.documents.length === 0) {
         // Team not found
         return false;
       }
       
-      const team = response.documents[0] as any;
+      // Try to find a matching team by teamCode and teamName (case-insensitive)
+      const team = response.documents.find(d =>
+        (d.teamCode as string).toLowerCase().trim() === sanitizedCredentials.teamCode.toLowerCase().trim()
+        && (d.teamName as string).toLowerCase().trim() === sanitizedCredentials.teamName.toLowerCase().trim()
+      );
       
-      // Verify team name matches (case-insensitive)
-      const teamNameMatch = team.teamName.toLowerCase().trim() === sanitizedCredentials.teamName.toLowerCase().trim();
+      if (!team) {
+        // No exact match found
+        return false;
+      }
       
       // Verify password matches
-      const passwordMatch = team.password === sanitizedCredentials.password;
+      const passwordMatch = (team.password as string) === sanitizedCredentials.password;
       
       // Add a small delay to prevent timing attacks
       await new Promise(resolve => setTimeout(resolve, Math.random() * 100 + 50));
       
-      return teamNameMatch && passwordMatch;
+      return passwordMatch;
       
-    } catch (dbError: any) {
+    } catch (dbError: unknown) {
+      // Normalize unknown error to an object with optional code/message
+      const err = dbError as { code?: number; message?: string } | null;
+
       // If teams collection doesn't exist yet, log warning and return false
-      if (dbError?.code === 404 || dbError?.message?.includes('Collection')) {
+      if (err && (err.code === 404 || (typeof err.message === 'string' && err.message.includes('Collection')))) {
         console.warn('Teams collection not found in Appwrite. Please create the collection first.');
         console.warn('Collection ID should be: teams');
         console.warn('Required attributes: teamName (string), teamCode (string), password (string)');

@@ -316,7 +316,6 @@ function EventPlanComponent() {
 function PreviousEventsGallery() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [direction, setDirection] = useState("next");
 
   const events = [
     {
@@ -475,16 +474,16 @@ function PreviousEventsGallery() {
   // Auto-slide functionality
   useEffect(() => {
     const interval = setInterval(() => {
-      handleNext();
+      // Advance slide using functional update to avoid stale closures and external function dependency
+      setCurrentSlide((prev) => (prev + 1) % events.length);
     }, 5000); // Change slide every 5 seconds
 
     return () => clearInterval(interval);
-  }, []); // Empty dependency array to prevent infinite re-renders
+  }, [events.length]);
 
   const handleNext = () => {
     if (isAnimating) return;
     setIsAnimating(true);
-    setDirection("next");
 
     setTimeout(() => {
       setCurrentSlide((prev) => (prev + 1) % events.length);
@@ -495,7 +494,6 @@ function PreviousEventsGallery() {
   const handlePrev = () => {
     if (isAnimating) return;
     setIsAnimating(true);
-    setDirection("prev");
 
     setTimeout(() => {
       setCurrentSlide((prev) => (prev - 1 + events.length) % events.length);
@@ -506,7 +504,6 @@ function PreviousEventsGallery() {
   const goToSlide = (index: number) => {
     if (isAnimating || index === currentSlide) return;
     setIsAnimating(true);
-    setDirection(index > currentSlide ? "next" : "prev");
 
     setTimeout(() => {
       setCurrentSlide(index);
@@ -515,7 +512,7 @@ function PreviousEventsGallery() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <>
       {/* Header */}
       <div className="text-center mb-16">
         <h2 className="text-6xl md:text-8xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-4 leading-tight">
@@ -654,7 +651,7 @@ function PreviousEventsGallery() {
           </span>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

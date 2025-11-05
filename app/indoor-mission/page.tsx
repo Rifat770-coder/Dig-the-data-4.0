@@ -240,11 +240,31 @@ export default function IndoorMissionPage() {
 
     setAnswerStates(newAnswerStates);
 
-    // Calculate new total score
-    let newTotalScore = totalScore;
+    // Recalculate total score from scratch (to account for hints)
     if (isCorrect) {
-      newTotalScore = totalScore + question.points;
       setCorrectAnswers(prev => prev + 1);
+      
+      // Calculate score from all correct answers
+      let newTotalScore = 0;
+      Object.keys(newAnswerStates).forEach((key) => {
+        const state = newAnswerStates[key];
+        if (state.correct) {
+          const q = questions.find(qu => qu.id === key);
+          if (q) newTotalScore += q.points;
+        }
+      });
+      
+      // Deduct points for hints used
+      const hintsKey = teamCode 
+        ? `indoorMissionHints_${teamCode}` 
+        : 'indoorMissionHints';
+      const storedHints = localStorage.getItem(hintsKey);
+      if (storedHints) {
+        const hintsUsed = JSON.parse(storedHints);
+        const hintCount = Object.keys(hintsUsed).length;
+        newTotalScore = Math.max(0, newTotalScore - (hintCount * 2));
+      }
+      
       setTotalScore(newTotalScore);
       
       // Update team's score in Appwrite if team is logged in
@@ -539,7 +559,10 @@ export default function IndoorMissionPage() {
                     <div className="mt-4 p-4 rounded-xl border bg-green-900/20 border-green-500/30 text-green-300">
                       <div className="flex items-center gap-2">
                         <Award className="w-5 h-5" />
-                        <span className="font-medium">Excellent! You earned {question.points} points! 🎉</span>
+                        <span className="font-medium">
+                          Excellent! You earned {question.points} points
+                          {hintShown && <span className="text-yellow-300"> (-2 for hint = {question.points - 2} net points)</span>}! 🎉
+                        </span>
                       </div>
                     </div>
                   )}
