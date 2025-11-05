@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ID } from 'appwrite';
 import { account, databases, storage, DATABASE_ID, USERS_COLLECTION_ID, PROFILE_PICTURES_BUCKET_ID, BKASH_RECEIPTS_BUCKET_ID } from '@/lib/appwrite';
-import { useAuthMode, useIsRegistrationEnabled } from '@/lib/auth-context';
+import { useIsRegistrationEnabled } from '@/lib/auth-context';
 
 interface FormData {
   name: string;
@@ -24,7 +24,6 @@ export default function RegisterPage() {
   const router = useRouter();
   
   // Authentication mode hooks
-  useAuthMode();
   const isRegistrationEnabled = useIsRegistrationEnabled();
   
   const [formData, setFormData] = useState<FormData>({
