@@ -96,12 +96,19 @@ export default function AdminPage() {
       if (err instanceof Error) {
         if (err.message.includes('Failed to fetch')) {
           errorMessage = 'Network error: Unable to connect to the database. Please check your internet connection and try again.';
-        } else if (err.message.includes('Unauthorized')) {
-          errorMessage = 'Authentication error: Invalid credentials or expired session.';
+        } else if (err.message.includes('Unauthorized') || err.message.includes('missing scope')) {
+          errorMessage = 'Permission error: Admin access requires proper database permissions. Please configure collection permissions in Appwrite Console to allow "Any" role to read documents.';
         } else if (err.message.includes('Not Found')) {
           errorMessage = 'Database error: Collection not found. Please check your database configuration.';
         } else {
           errorMessage = err.message;
+        }
+      } else if (typeof err === 'object' && err !== null) {
+        const errorObj = err as { message?: string; code?: number };
+        if (errorObj.message?.includes('missing scope')) {
+          errorMessage = 'Permission error: The database collection needs read permissions for guests. Go to Appwrite Console → Database → Collection 15 → Settings → Permissions and add "Any" role with Read permission.';
+        } else if (errorObj.message) {
+          errorMessage = errorObj.message;
         }
       }
       
