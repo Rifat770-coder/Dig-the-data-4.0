@@ -17,21 +17,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async redirects() {
-    return [
-      {
-        source: '/:path*',
-        has: [
-          {
-            type: 'host',
-            value: 'digthedata.live',
-          },
-        ],
-        destination: 'https://www.digthedata.live/:path*',
-        permanent: true,
-      },
-    ];
-  },
 };
 
 export default nextConfig;

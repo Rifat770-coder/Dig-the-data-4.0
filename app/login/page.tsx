@@ -1,15 +1,12 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { account } from '@/lib/appwrite';
-import TeamLogin from '@/components/TeamLogin';
 
-function LoginContent() {
-  const searchParams = useSearchParams();
-  const [loginType, setLoginType] = useState<'individual' | 'team'>('individual');
+export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -23,29 +20,18 @@ function LoginContent() {
 
   useEffect(() => {
     setIsVisible(true);
-    
-    // Check URL parameter for login type
-    const typeParam = searchParams.get('type');
-    if (typeParam === 'team') {
-      setLoginType('team');
-    } else if (typeParam === 'individual') {
-      setLoginType('individual');
-    }
-    
-    // Check if user is already logged in (only for individual)
-    if (loginType === 'individual') {
-      checkAuthStatus();
-    }
+    // Check if user is already logged in
+    checkAuthStatus();
     
     // Check if user just registered
-    if (searchParams.get('registered') === 'true') {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('registered') === 'true') {
       setMessage({ 
         type: 'success', 
         text: 'Registration successful! You can now sign in with your credentials.' 
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, loginType]);
+  }, []);
 
   const checkAuthStatus = async () => {
     try {
@@ -54,7 +40,7 @@ function LoginContent() {
         // User is already logged in, redirect to profile or dashboard
         router.push('/profile');
       }
-    } catch {
+    } catch (error) {
       // User is not logged in, which is expected for login page
       console.log('User not logged in');
     }
@@ -223,39 +209,8 @@ function LoginContent() {
             <p className="text-gray-300 text-sm">Sign in to your Dig The Data 4.0 account</p>
           </div>
 
-          {/* Login Type Tabs */}
-          <div className="flex gap-2 mb-6 bg-gray-800/50 backdrop-blur-xl p-2 rounded-xl border border-cyan-500/20">
-            <button
-              onClick={() => setLoginType('individual')}
-              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-300 ${
-                loginType === 'individual'
-                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              Individual Login
-            </button>
-            <button
-              onClick={() => setLoginType('team')}
-              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-300 ${
-                loginType === 'team'
-                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              Team Login
-            </button>
-          </div>
-
-          {/* Conditional Rendering based on Login Type */}
-          {loginType === 'team' ? (
-            <TeamLogin 
-              onSuccess={(msg) => setMessage({ type: 'success', text: msg })}
-              onError={(msg) => setMessage({ type: 'error', text: msg })}
-            />
-          ) : (
-            // Individual Login Form
-            <div className="glass-card p-8 rounded-2xl border border-white/10 shadow-2xl">
+          {/* Login Form */}
+          <div className="glass-card p-8 rounded-2xl border border-white/10 shadow-2xl">
             <form onSubmit={handleSubmit} className="space-y-6">
               
               {/* Email Field */}
@@ -413,7 +368,6 @@ function LoginContent() {
               </div>
             </form>
           </div>
-          )}
 
           {/* Back to Home */}
           <div className="text-center mt-8">
@@ -430,20 +384,5 @@ function LoginContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-          <p className="text-white text-xl">Loading...</p>
-        </div>
-      </div>
-    }>
-      <LoginContent />
-    </Suspense>
   );
 }

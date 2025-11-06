@@ -3,19 +3,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 // Use native <img> for external Appwrite URLs to avoid Next.js image optimizer 500 errors
 import { Models } from 'appwrite';
 import { databases, DATABASE_ID, USERS_COLLECTION_ID, getProfilePictureUrl, getBkashReceiptUrl } from '@/lib/appwrite';
-import AuthModeToggle from '@/components/AuthModeToggle';
-import { 
-  createTeam, 
-  getAllTeams, 
-  deleteTeam, 
-  updateTeam,
-  Team,
-  TeamValidationError
-} from '@/lib/team-api';
 
 interface UserData extends Models.Document {
   name: string;
@@ -31,11 +21,11 @@ interface UserData extends Models.Document {
 
 export default function AdminPage() {
   const [users, setUsers] = useState<UserData[]>([]);
-  const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
-  const [teamsLoading, setTeamsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<keyof UserData>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   
   // Authentication states
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -45,25 +35,6 @@ export default function AdminPage() {
   
   // Image modal state
   const [viewingImage, setViewingImage] = useState<{ url: string; title: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'users' | 'teams'>('users');
-  
-  // Team management states
-  const [showCreateTeam, setShowCreateTeam] = useState(false);
-  const [editingTeam, setEditingTeam] = useState<Team | null>(null);
-  const [availableUsers, setAvailableUsers] = useState<UserData[]>([]);
-  const [teamForm, setTeamForm] = useState({
-    teamName: '',
-    teamCode: '',
-    password: '',
-    memberIds: [] as string[]
-  });
-  const [teamError, setTeamError] = useState<string | null>(null);
-  const [teamSuccess, setTeamSuccess] = useState<string | null>(null);
-  
-  // Search and filter states
-  const [teamSearchTerm, setTeamSearchTerm] = useState('');
-  const [userSearchTerm, setUserSearchTerm] = useState('');
-  const [departmentFilter, setDepartmentFilter] = useState('');
 
   // Admin password (in production, this should be environment variable)
   const ADMIN_PASSWORD = 'nccrifat';
@@ -74,201 +45,10 @@ export default function AdminPage() {
     if (authenticated === 'true') {
       setIsAuthenticated(true);
       fetchUsers();
-      fetchTeams();
     } else {
       setLoading(false);
     }
   }, []);
-
-  // Team management functions
-  const fetchTeams = async () => {
-    try {
-      setTeamsLoading(true);
-      const teamsData = await getAllTeams();
-      setTeams(teamsData || []);
-    } catch (err) {
-      console.error('Error fetching teams:', err);
-      setTeams([]); // Ensure teams is always an array
-      setTeamError('Failed to fetch teams');
-    } finally {
-      setTeamsLoading(false);
-    }
-  };
-
-
-
-  const handleCreateTeam = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setTeamError(null);
-    setTeamSuccess(null);
-
-    try {
-      await createTeam({
-        teamName: teamForm.teamName,
-        teamCode: teamForm.teamCode,
-        password: teamForm.password,
-        memberIds: teamForm.memberIds
-      });
-
-      setTeamSuccess('Team created successfully!');
-      setShowCreateTeam(false);
-      setTeamForm({ teamName: '', teamCode: '', password: '', memberIds: [] });
-      fetchTeams();
-      fetchUsers(); // Refresh users to update their team assignments
-    } catch (err) {
-      if (err instanceof TeamValidationError) {
-        setTeamError(err.message);
-      } else {
-        setTeamError('Failed to create team');
-      }
-    }
-  };
-
-  const handleUpdateTeam = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingTeam || !editingTeam.$id) return;
-
-    setTeamError(null);
-    setTeamSuccess(null);
-
-    try {
-      await updateTeam(editingTeam.$id, {
-        teamName: teamForm.teamName,
-        teamCode: teamForm.teamCode,
-        password: teamForm.password,
-        memberIds: teamForm.memberIds
-      });
-
-      setTeamSuccess('Team updated successfully!');
-      setEditingTeam(null);
-      setTeamForm({ teamName: '', teamCode: '', password: '', memberIds: [] });
-      fetchTeams();
-      fetchUsers();
-    } catch (err) {
-      if (err instanceof TeamValidationError) {
-        setTeamError(err.message);
-      } else {
-        setTeamError('Failed to update team');
-      }
-    }
-  };
-
-  const handleDeleteTeam = async (teamId: string) => {
-    if (!confirm('Are you sure you want to delete this team? This will remove all members from the team.')) {
-      return;
-    }
-
-    try {
-      await deleteTeam(teamId);
-      setTeamSuccess('Team deleted successfully!');
-      fetchTeams();
-      fetchUsers();
-    } catch (error) {
-      console.error('Error deleting team:', error);
-      setTeamError('Failed to delete team');
-    }
-  };
-
-  const fetchAvailableUsers = async () => {
-    try {
-      // Fetch all users
-      const response = await databases.listDocuments(
-        DATABASE_ID,
-        USERS_COLLECTION_ID
-      );
-      const allUsers = response.documents as unknown as UserData[];
-      
-      // Get all assigned user IDs from other teams (excluding current editing team)
-      const assignedUserIds = new Set<string>();
-      teams.forEach(team => {
-        // Skip the team we're currently editing
-        if (editingTeam && team.$id === editingTeam.$id) {
-          return;
-        }
-        // Add all member IDs from other teams
-        if (team.memberIds && Array.isArray(team.memberIds)) {
-          team.memberIds.forEach(id => assignedUserIds.add(id));
-        }
-      });
-      
-      // Filter out users who are already assigned to other teams
-      const availableUsers = allUsers.filter(user => !assignedUserIds.has(user.$id));
-      
-      setAvailableUsers(availableUsers);
-    } catch (err) {
-      console.error('Error fetching available users:', err);
-      setAvailableUsers([]);
-      setTeamError('Failed to fetch available users');
-    }
-  };
-
-  const startEditTeam = (team: Team) => {
-    setEditingTeam(team);
-    setTeamForm({
-      teamName: team.teamName,
-      teamCode: team.teamCode,
-      password: team.password,
-      memberIds: team.memberIds || [] // Load existing members
-    });
-    setShowCreateTeam(true);
-    fetchAvailableUsers();
-  };
-
-  const cancelTeamForm = () => {
-    setShowCreateTeam(false);
-    setEditingTeam(null);
-    setTeamForm({ teamName: '', teamCode: '', password: '', memberIds: [] });
-    setTeamError(null);
-  };
-
-  const toggleMemberSelection = (userId: string) => {
-    setTeamForm(prev => {
-      const memberIds = prev?.memberIds || [];
-      const isSelected = memberIds.includes(userId);
-      if (isSelected) {
-        return { ...prev, memberIds: memberIds.filter(id => id !== userId) };
-      } else {
-        // No limit on member count for now
-        return { ...prev, memberIds: [...memberIds, userId] };
-      }
-    });
-  };
-
-  // Filter and search functions
-  const getFilteredUsers = () => {
-    if (!users || !Array.isArray(users)) return [];
-    return users.filter(user => {
-      const matchesSearch = userSearchTerm === '' || 
-        user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-        user.userId.toLowerCase().includes(userSearchTerm.toLowerCase());
-      
-      const matchesDepartment = departmentFilter === '' || 
-        user.department.toLowerCase().includes(departmentFilter.toLowerCase());
-      
-      return matchesSearch && matchesDepartment;
-    });
-  };
-
-  const getFilteredTeams = () => {
-    if (!teams || !Array.isArray(teams)) return [];
-    return teams.filter(team => {
-      if (!team) return false;
-      
-      const matchesSearch = teamSearchTerm === '' ||
-        (team.teamName && team.teamName.toLowerCase().includes(teamSearchTerm.toLowerCase())) ||
-        (team.teamCode && team.teamCode.toLowerCase().includes(teamSearchTerm.toLowerCase()));
-      
-      // All teams are now "complete" in the new schema (no member management)
-      return matchesSearch;
-    });
-  };
-
-  const getUniqueDepartments = () => {
-    if (!users || !Array.isArray(users)) return [];
-    const departments = users.map(user => user.department).filter(Boolean);
-    return [...new Set(departments)].sort();
-  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -301,25 +81,13 @@ export default function AdminPage() {
         throw new Error('Appwrite configuration is missing. Please check your environment variables.');
       }
       
-      try {
-        const response = await databases.listDocuments(
-          DATABASE_ID,
-          USERS_COLLECTION_ID
-        );
-        
-        setUsers(response.documents as unknown as UserData[]);
-        setError(null);
-      } catch (collectionError: unknown) {
-        // Handle collection not found error specifically
-        const error = collectionError as { code?: number; message?: string };
-        if (error?.code === 404 || error?.message?.includes('Collection')) {
-          console.warn('Users collection not found in Appwrite. This is expected during initial setup.');
-          setUsers([]);
-          setError('Users collection not found. This is normal during initial setup. Users will appear here once they start registering.');
-          return;
-        }
-        throw collectionError;
-      }
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        USERS_COLLECTION_ID
+      );
+      
+      setUsers(response.documents as unknown as UserData[]);
+      setError(null);
     } catch (err: unknown) {
       console.error('Error fetching users:', err);
       
@@ -330,7 +98,7 @@ export default function AdminPage() {
           errorMessage = 'Network error: Unable to connect to the database. Please check your internet connection and try again.';
         } else if (err.message.includes('Unauthorized')) {
           errorMessage = 'Authentication error: Invalid credentials or expired session.';
-        } else if (err.message.includes('Not Found') || err.message.includes('Collection')) {
+        } else if (err.message.includes('Not Found')) {
           errorMessage = 'Database error: Collection not found. Please check your database configuration.';
         } else {
           errorMessage = err.message;
@@ -358,14 +126,6 @@ export default function AdminPage() {
       alert('User deleted successfully!');
     } catch (err: unknown) {
       console.error('Error deleting user:', err);
-      
-      // Handle collection not found error specifically
-      const error = err as { code?: number; message?: string };
-      if (error?.code === 404 && error?.message?.includes('Collection')) {
-        alert('Cannot delete user: Users collection not found. This is expected during initial setup.');
-        return;
-      }
-      
       alert('Failed to delete user: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
   };
@@ -408,11 +168,11 @@ export default function AdminPage() {
         <div class="stats">
           <div class="stat">
             <h3>Total Users</h3>
-            <p>${users?.length || 0}</p>
+            <p>${users.length}</p>
           </div>
           <div class="stat">
             <h3>New Today</h3>
-            <p>${(users || []).filter(user => {
+            <p>${users.filter(user => {
               const today = new Date().toDateString();
               const userDate = new Date(user.createdAt).toDateString();
               return today === userDate;
@@ -420,7 +180,7 @@ export default function AdminPage() {
           </div>
           <div class="stat">
             <h3>Departments</h3>
-            <p>${new Set((users || []).map(user => user.department)).size}</p>
+            <p>${new Set(users.map(user => user.department)).size}</p>
           </div>
         </div>
 
@@ -476,16 +236,26 @@ export default function AdminPage() {
     }
   };
 
-  // Filter and search users
-  const filteredAndSortedUsers = getFilteredUsers()
+  // Filter and sort users
+  const filteredAndSortedUsers = users
+    .filter(user => 
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.bkashTransactionId && user.bkashTransactionId.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
     .sort((a, b) => {
       const aVal = a[sortBy];
       const bVal = b[sortBy];
       
       if (!aVal || !bVal) return 0;
       
-      // Sort in descending order by default (newest first)
-      return aVal < bVal ? 1 : -1;
+      if (sortOrder === 'asc') {
+        return aVal > bVal ? 1 : -1;
+      } else {
+        return aVal < bVal ? 1 : -1;
+      }
     });
 
   if (loading) {
@@ -586,25 +356,7 @@ export default function AdminPage() {
             <p className="text-gray-400 mt-2">Manage registered users</p>
           </div>
           
-          <div className="flex gap-4 flex-wrap">
-            <Link
-              href="/admin/leaderboard"
-              className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-400 hover:to-orange-400 transition-colors flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-              </svg>
-              🏆 Leaderboard
-            </Link>
-            <Link
-              href="/admin/questions"
-              className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-400 hover:to-blue-400 transition-colors flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Manage Questions
-            </Link>
+          <div className="flex gap-4">
             <Link
               href="/"
               className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
@@ -632,304 +384,62 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Authentication Mode Control */}
-        <div className="bg-gray-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl p-6 mb-6">
-          <div className="flex flex-col items-center">
-            <h2 className="text-xl font-semibold text-white mb-2">Authentication Mode Control</h2>
-            <p className="text-gray-400 text-sm mb-6 text-center max-w-2xl">
-              Toggle between registration mode (for individual user registration) and team login mode (for team-based access).
-              This setting affects the entire application&apos;s authentication flow.
-            </p>
-            <AuthModeToggle 
-              size="lg" 
-              onModeChange={(mode) => {
-                console.log('Auth mode changed to:', mode);
-                // Optionally refresh users or update UI based on mode change
-              }}
-            />
-          </div>
-        </div>
-
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-gray-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl p-6">
             <h3 className="text-cyan-400 text-sm font-medium">Total Users</h3>
-            <p className="text-3xl font-bold text-white mt-2">{users?.length || 0}</p>
+            <p className="text-3xl font-bold text-white mt-2">{users.length}</p>
           </div>
           <div className="bg-gray-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl p-6">
             <h3 className="text-cyan-400 text-sm font-medium">New Today</h3>
             <p className="text-3xl font-bold text-white mt-2">
-              {users && Array.isArray(users) ? users.filter(user => {
+              {users.filter(user => {
                 const today = new Date().toDateString();
                 const userDate = new Date(user.createdAt).toDateString();
                 return today === userDate;
-              }).length : 0}
+              }).length}
             </p>
           </div>
           <div className="bg-gray-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl p-6">
             <h3 className="text-cyan-400 text-sm font-medium">Departments</h3>
             <p className="text-3xl font-bold text-white mt-2">
-              {users && Array.isArray(users) ? new Set(users.map(user => user.department)).size : 0}
+              {new Set(users.map(user => user.department)).size}
             </p>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="bg-gray-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl p-1 mb-8">
-          <div className="flex">
-            <button
-              onClick={() => setActiveTab('users')}
-              className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
-                activeTab === 'users'
-                  ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
-              }`}
-            >
-              <div className="flex items-center justify-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                </svg>
-                Users ({users?.length || 0})
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('teams')}
-              className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
-                activeTab === 'teams'
-                  ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
-              }`}
-            >
-              <div className="flex items-center justify-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                Teams ({teams?.length || 0})
-              </div>
-            </button>
-          </div>
-        </div>
-
-        {/* Team Management Section */}
-        {activeTab === 'teams' && (
-          <div className="space-y-6">
-            {/* Team Actions Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-white">Team Management</h2>
-                <p className="text-gray-400">Create and manage team login credentials</p>
-              </div>
-              <button
-                onClick={() => {
-                  setShowCreateTeam(true);
-                  fetchAvailableUsers();
-                }}
-                className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-400 hover:to-emerald-400 transition-colors flex items-center gap-2"
+        {/* Search and Filters */}
+        <div className="bg-gray-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl p-6 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+              />
+            </div>
+            <div className="flex gap-2">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as keyof UserData)}
+                className="px-4 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Create Team
+                <option value="createdAt">Sort by Date</option>
+                <option value="name">Sort by Name</option>
+                <option value="department">Sort by Department</option>
+                <option value="userId">Sort by ID</option>
+              </select>
+              <button
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+              >
+                {sortOrder === 'asc' ? '↑' : '↓'}
               </button>
             </div>
-
-            {/* Success/Error Messages */}
-            {teamSuccess && (
-              <div className="p-4 rounded-lg border bg-green-900/30 text-green-300 border-green-500/30">
-                {teamSuccess}
-              </div>
-            )}
-            {teamError && (
-              <div className="p-4 rounded-lg border bg-red-900/30 text-red-300 border-red-500/30">
-                {teamError}
-              </div>
-            )}
-
-            {/* Team Search and Filter Controls */}
-            <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Search Teams</h3>
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-cyan-300 mb-2">Search Teams</label>
-                  <input
-                    type="text"
-                    placeholder="Search by team name or code..."
-                    value={teamSearchTerm}
-                    onChange={(e) => setTeamSearchTerm(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400"
-                  />
-                </div>
-              </div>
-              
-              {/* Filter Results Summary */}
-              <div className="mt-4 flex items-center justify-between">
-                <div className="text-sm text-gray-400">
-                  Showing {getFilteredTeams().length} of {teams?.length || 0} teams
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setTeamSearchTerm('');
-                    }}
-                    className="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
-                  >
-                    Clear Search
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Teams Grid */}
-            {teamsLoading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-                <p className="text-gray-400">Loading teams...</p>
-              </div>
-            ) : getFilteredTeams().length === 0 ? (
-              <div className="text-center py-12 bg-gray-800/30 rounded-xl border border-gray-700/50">
-                <svg className="w-16 h-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <h3 className="text-xl font-semibold text-gray-400 mb-2">
-                  {teamSearchTerm ? 'No Teams Match Your Search' : 'No Teams Created'}
-                </h3>
-                <p className="text-gray-500">
-                  {teamSearchTerm ? 'Try adjusting your search criteria' : 'Create your first team to get started'}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {getFilteredTeams().map((team) => (
-                  <div key={team.$id} className="bg-gray-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl p-6 hover:border-cyan-500/40 transition-all duration-300">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-xl font-semibold text-white mb-1">{team.teamName}</h3>
-                        <p className="text-cyan-400 font-mono text-sm">Code: {team.teamCode}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => startEditTeam(team)}
-                          className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-lg transition-colors"
-                          title="Edit Team"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => team.$id && handleDeleteTeam(team.$id)}
-                          className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-colors"
-                          title="Delete Team"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400 text-sm">Team Code:</span>
-                        <span className="text-cyan-400 font-mono font-semibold">{team.teamCode}</span>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400 text-sm">Created:</span>
-                        <span className="text-gray-300 text-sm">{team.$createdAt ? new Date(team.$createdAt).toLocaleDateString() : 'N/A'}</span>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400 text-sm">Last Updated:</span>
-                        <span className="text-gray-300 text-sm">{team.$updatedAt ? new Date(team.$updatedAt).toLocaleDateString() : 'N/A'}</span>
-                      </div>
-                      
-                      <div className="pt-3 border-t border-gray-700/50">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                            <span className="text-sm text-gray-300">Members:</span>
-                          </div>
-                          <span className="text-cyan-400 font-semibold">{team.memberIds?.length || 0}</span>
-                        </div>
-                        <div className="flex items-center gap-2 mt-2">
-                          <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                          <span className="text-sm text-gray-300">Active</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
-        )}
-
-        {/* Users Section */}
-        {activeTab === 'users' && (
-          <div className="space-y-6">
-            {/* Enhanced Search and Filter Controls */}
-            <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Search & Filter Users</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-cyan-300 mb-2">Search Users</label>
-                  <input
-                    type="text"
-                    placeholder="Search by name, email, or ID..."
-                    value={userSearchTerm}
-                    onChange={(e) => setUserSearchTerm(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-cyan-300 mb-2">Department</label>
-                  <select
-                    value={departmentFilter}
-                    onChange={(e) => setDepartmentFilter(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
-                  >
-                    <option value="">All Departments</option>
-                    {getUniqueDepartments().map(dept => (
-                      <option key={dept} value={dept}>{dept}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-cyan-300 mb-2">Sort By</label>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as keyof UserData)}
-                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
-                  >
-                    <option value="createdAt">Registration Date</option>
-                    <option value="name">Name</option>
-                    <option value="department">Department</option>
-                    <option value="userId">User ID</option>
-                  </select>
-                </div>
-              </div>
-              
-              {/* Filter Results Summary */}
-              <div className="mt-4 flex items-center justify-between">
-                <div className="text-sm text-gray-400">
-                  Showing {getFilteredUsers().length} of {users && Array.isArray(users) ? users.length : 0} users
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setUserSearchTerm('');
-                      setDepartmentFilter('');
-                    }}
-                    className="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
-                  >
-                    Clear Filters
-                  </button>
-                </div>
-              </div>
-            </div>
+        </div>
 
         {/* Error Display */}
         {error && (
@@ -960,7 +470,7 @@ export default function AdminPage() {
                 {filteredAndSortedUsers.length === 0 ? (
                   <tr>
                     <td colSpan={10} className="text-center p-8 text-gray-400">
-                      {userSearchTerm || departmentFilter ? 'No users found matching your filters.' : 'No users registered yet.'}
+                      {searchTerm ? 'No users found matching your search.' : 'No users registered yet.'}
                     </td>
                   </tr>
                 ) : (
@@ -970,19 +480,17 @@ export default function AdminPage() {
                       
                       {/* Profile Picture (thumbnail) - use native img to avoid Next.js optimizer */}
                       <td className="p-4">
-                        {(() => {
-                          const pictureUrl = user.profilePictureId ? getProfilePictureUrl(user.profilePictureId) : undefined;
-                          if (pictureUrl) {
-                            return (
+                        {user.profilePictureId ? (
+                          (() => {
+                            const pictureUrl = getProfilePictureUrl(user.profilePictureId);
+                            return pictureUrl ? (
                               <button
-                                onClick={() => setViewingImage({
-                                  url: pictureUrl,
-                                  title: `${user.name}'s Profile Picture`
+                                onClick={() => setViewingImage({ 
+                                  url: pictureUrl, 
+                                  title: `${user.name}'s Profile Picture` 
                                 })}
                                 className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-cyan-500/50 hover:border-cyan-400 transition-all hover:scale-110 cursor-pointer group"
                               >
-                                {/* Use native img for Appwrite / external URLs */}
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={pictureUrl}
                                   alt={`${user.name}'s profile`}
@@ -994,17 +502,21 @@ export default function AdminPage() {
                                   </svg>
                                 </div>
                               </button>
+                            ) : (
+                              <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
+                                <svg className="w-6 h-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                                </svg>
+                              </div>
                             );
-                          }
-                          
-                          return (
-                            <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
-                              <svg className="w-6 h-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                              </svg>
-                            </div>
-                          );
-                        })()}
+                          })()
+                        ) : (
+                          <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
+                            <svg className="w-6 h-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
                       </td>
                       
                       <td className="p-4 text-white font-medium">{user.name}</td>
@@ -1019,23 +531,20 @@ export default function AdminPage() {
                       
                       {/* bKash Receipt (thumbnail) - use native img for Appwrite URLs */}
                       <td className="p-4">
-                        {(() => {
-                          const receiptUrl = user.bkashTransactionPhotoId ? getBkashReceiptUrl(user.bkashTransactionPhotoId) : undefined;
-                          if (receiptUrl) {
-                            return (
+                        {user.bkashTransactionPhotoId ? (
+                          (() => {
+                            const receiptUrl = getBkashReceiptUrl(user.bkashTransactionPhotoId);
+                            return receiptUrl ? (
                               <button
-                                onClick={() => setViewingImage({
-                                  url: receiptUrl,
-                                  title: `${user.name}'s bKash Receipt`
+                                onClick={() => setViewingImage({ 
+                                  url: receiptUrl, 
+                                  title: `${user.name}'s bKash Receipt` 
                                 })}
-                                className="relative w-16 h-12 rounded overflow-hidden border-2 border-cyan-500/50 hover:border-cyan-400 transition-all group"
+                                className="relative w-16 h-12 rounded overflow-hidden border-2 border-green-500/50 hover:border-green-400 transition-all hover:scale-110 cursor-pointer group"
                               >
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={receiptUrl}
                                   alt={`${user.name}'s bKash receipt`}
-                                  width={64}
-                                  height={48}
                                   className="w-full h-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -1044,17 +553,17 @@ export default function AdminPage() {
                                   </svg>
                                 </div>
                               </button>
+                            ) : (
+                              <span className="text-gray-500 text-xs">Invalid receipt</span>
                             );
-                          }
-                          if (user.bkashTransactionId) {
-                            return (
-                              <span className="text-gray-400 text-xs font-mono bg-gray-700/50 px-2 py-1 rounded">
-                                {user.bkashTransactionId}
-                              </span>
-                            );
-                          }
-                          return <span className="text-gray-500 text-xs">No receipt</span>;
-                        })()}
+                          })()
+                        ) : user.bkashTransactionId ? (
+                          <span className="text-gray-400 text-xs font-mono bg-gray-700/50 px-2 py-1 rounded">
+                            {user.bkashTransactionId}
+                          </span>
+                        ) : (
+                          <span className="text-gray-500 text-xs">No receipt</span>
+                        )}
                       </td>
                       
                       <td className="p-4 text-gray-300 text-sm">
@@ -1084,165 +593,9 @@ export default function AdminPage() {
 
         {/* Footer */}
         <div className="mt-8 text-center text-gray-400">
-          <p>Showing {filteredAndSortedUsers.length} of {users && Array.isArray(users) ? users.length : 0} users</p>
+          <p>Showing {filteredAndSortedUsers.length} of {users.length} users</p>
         </div>
       </div>
-        )}
-      </div>
-
-      {/* Team Creation/Edit Modal */}
-      {showCreateTeam && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 border border-cyan-500/20 rounded-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white">
-                {editingTeam ? 'Edit Team' : 'Create New Team'}
-              </h2>
-              <button
-                onClick={cancelTeamForm}
-                className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <form onSubmit={editingTeam ? handleUpdateTeam : handleCreateTeam} className="space-y-6">
-              {/* Team Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-cyan-300 mb-2">
-                    Team Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={teamForm?.teamName || ''}
-                    onChange={(e) => setTeamForm(prev => ({ ...prev, teamName: e.target.value }))}
-                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400"
-                    placeholder="Enter team name"
-                    required
-                    minLength={3}
-                    maxLength={128}
-                  />
-                  <p className="text-xs text-gray-400 mt-1">3-128 characters</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-cyan-300 mb-2">
-                    Team Code *
-                  </label>
-                  <input
-                    type="text"
-                    value={teamForm?.teamCode || ''}
-                    onChange={(e) => setTeamForm(prev => ({ ...prev, teamCode: e.target.value.toUpperCase() }))}
-                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400 font-mono"
-                    placeholder="TEAM01"
-                    required
-                    minLength={4}
-                    maxLength={25}
-                    pattern="[A-Z0-9]+"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">Alphanumeric characters only, 4-25 characters</p>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-cyan-300 mb-2">
-                  Password *
-                </label>
-                <input
-                  type="password"
-                  value={teamForm?.password || ''}
-                  onChange={(e) => setTeamForm(prev => ({ ...prev, password: e.target.value }))}
-                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400"
-                  placeholder="Enter team password"
-                  required
-                  minLength={8}
-                  maxLength={30}
-                />
-                <p className="text-xs text-gray-400 mt-1">8-30 characters - This will be used for team login</p>
-              </div>
-
-              {/* Member Selection */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <label className="block text-sm font-medium text-cyan-300">
-                    Select Team Members ({teamForm?.memberIds?.length || 0} selected)
-                  </label>
-                </div>
-
-                {!availableUsers || !Array.isArray(availableUsers) || availableUsers.length === 0 ? (
-                  <div className="text-center py-8 bg-gray-700/30 rounded-lg border border-gray-600/50">
-                    <svg className="w-12 h-12 text-gray-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <p className="text-gray-400 font-medium mb-1">No available users</p>
-                    <p className="text-gray-500 text-sm">All users are already assigned to other teams</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto p-4 bg-gray-700/20 rounded-lg border border-gray-600/50">
-                    {availableUsers.map((user) => {
-                      const isSelected = teamForm?.memberIds?.includes(user.$id) || false;
-                      
-                      return (
-                        <div
-                          key={user.$id}
-                          className={`p-4 rounded-lg border cursor-pointer transition-all duration-300 ${
-                            isSelected
-                              ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300'
-                              : 'bg-gray-600/30 border-gray-500/50 text-gray-300 hover:bg-gray-600/50 hover:border-gray-400/50'
-                          }`}
-                          onClick={() => toggleMemberSelection(user.$id)}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                              isSelected 
-                                ? 'bg-cyan-500 border-cyan-500' 
-                                : 'border-gray-400'
-                            }`}>
-                              {isSelected && (
-                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{user.name}</p>
-                              <p className="text-xs opacity-75 truncate">{user.email}</p>
-                              <p className="text-xs opacity-60">{user.department}</p>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                <p className="text-xs text-gray-400 mt-2">
-                  Select team members - You can select multiple members
-                </p>
-              </div>
-
-              {/* Form Actions */}
-              <div className="flex justify-end gap-4 pt-6 border-t border-gray-700/50">
-                <button
-                  type="button"
-                  onClick={cancelTeamForm}
-                  className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={!teamForm?.teamName || !teamForm?.teamCode || !teamForm?.password}
-                  className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-400 hover:to-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {editingTeam ? 'Update Team' : 'Create Team'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Image Modal (renders native img to avoid optimizer) */}
       {viewingImage && (
@@ -1261,23 +614,17 @@ export default function AdminPage() {
               </svg>
             </button>
 
-              <Image
-                src={viewingImage.url}
-                alt={viewingImage.title}
-                width={1600}
-                height={900}
-                className="max-h-[90%] max-w-[100%] object-contain"
-                unoptimized
-              />
+            {/* Image Title */}
+            <div className="mb-4 text-center">
+              <h3 className="text-2xl font-bold text-white">{viewingImage.title}</h3>
+            </div>
+
             {/* Image Container */}
             <div className="w-full h-[70vh] bg-gray-900 rounded-lg overflow-auto border-2 border-cyan-500/50 flex items-center justify-center">
-              <Image
+              <img
                 src={viewingImage.url}
                 alt={viewingImage.title}
-                width={1600}
-                height={900}
                 className="max-h-[90%] max-w-[100%] object-contain"
-                unoptimized
               />
             </div>
 
