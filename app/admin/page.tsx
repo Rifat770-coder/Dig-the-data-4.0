@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 // Use native <img> for external Appwrite URLs to avoid Next.js image optimizer 500 errors
-import { Models } from 'appwrite';
+import { Models, Query } from 'appwrite';
 import { databases, DATABASE_ID, USERS_COLLECTION_ID, getProfilePictureUrl, getBkashReceiptUrl } from '@/lib/appwrite';
 
 interface UserData extends Models.Document {
@@ -81,9 +81,14 @@ export default function AdminPage() {
         throw new Error('Appwrite configuration is missing. Please check your environment variables.');
       }
       
+      // Fetch all users with increased limit (Appwrite max is 5000 per request)
       const response = await databases.listDocuments(
         DATABASE_ID,
-        USERS_COLLECTION_ID
+        USERS_COLLECTION_ID,
+        [
+          Query.limit(5000), // Fetch up to 5000 users (Appwrite's maximum)
+          Query.orderDesc('$createdAt') // Order by creation date, newest first
+        ]
       );
       
       setUsers(response.documents as unknown as UserData[]);
@@ -199,7 +204,6 @@ export default function AdminPage() {
               <th>Email</th>
               <th>User ID</th>
               <th>Department</th>
-              <th>Phone</th>
               <th>Registered</th>
             </tr>
           </thead>
@@ -211,7 +215,7 @@ export default function AdminPage() {
                 <td>${user.email}</td>
                 <td>${user.userId}</td>
                 <td><span class="department">${user.department}</span></td>
-                <td>${user.Phone}</td>
+               
                 <td>${new Date(user.createdAt).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'short',
