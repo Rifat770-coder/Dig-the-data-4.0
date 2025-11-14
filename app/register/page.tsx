@@ -543,7 +543,7 @@ export default function RegisterPage() {
                     <li>1. 01744368707</li>
                     <li>2. 01630904798</li>
                     <li>3. 01882038517</li>
-                    <li>4. 01798506446</li>
+                   
                     <li>5. 01570292546</li>
                   </ul>
                 </div>
