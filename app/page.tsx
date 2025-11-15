@@ -6,10 +6,12 @@ import { useState, useEffect } from "react";
 import Footer from "./Footer/page";
 import BannerSection from "./Banner-Section/page";
 import LegacyPage from "./Legacy/page";
+import { useAuthMode } from "@/lib/auth-context";
 
 // Modern Navigation Component
 function ModernNavigation() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { authMode, isLoading } = useAuthMode();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,6 +20,36 @@ function ModernNavigation() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Determine button labels and routes based on auth mode
+  const getAuthButtons = () => {
+    if (isLoading) {
+      return {
+        primaryLabel: "Loading...",
+        primaryRoute: "#",
+        secondaryLabel: "Loading...",
+        secondaryRoute: "#"
+      };
+    }
+
+    if (authMode === 'team-login') {
+      return {
+        primaryLabel: "Team Profile",
+        primaryRoute: "/profile/team", // Direct link to team profile page
+        secondaryLabel: "Team Login",
+        secondaryRoute: "/login?type=team"
+      };
+    } else {
+      return {
+        primaryLabel: "Login",
+        primaryRoute: "/login?type=individual",
+        secondaryLabel: "Register Now",
+        secondaryRoute: "/register"
+      };
+    }
+  };
+
+  const authButtons = getAuthButtons();
 
   return (
     <nav
@@ -64,21 +96,51 @@ function ModernNavigation() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
-            {/* Login button - Optimized for mobile */}
+          <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
+            {/* Primary Auth button - Enhanced mobile responsiveness */}
             <Link
-              href="/login"
-              className="px-2 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2.5 text-cyan-400 border border-cyan-500/30 rounded-lg sm:rounded-xl font-semibold hover:bg-cyan-500/10 transition-all duration-300 text-xs sm:text-sm md:text-base min-h-[36px] sm:min-h-[40px] md:min-h-[44px] min-w-[60px] sm:min-w-[80px] md:min-w-[100px] flex items-center justify-center"
+              href={authButtons.primaryRoute}
+              className={`px-2 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2.5 text-cyan-400 border border-cyan-500/30 rounded-lg sm:rounded-xl font-semibold hover:bg-cyan-500/10 transition-all duration-300 text-xs sm:text-sm md:text-base min-h-[36px] sm:min-h-[40px] md:min-h-[44px] flex items-center justify-center text-center leading-tight ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              style={{
+                minWidth: authButtons.primaryLabel === 'Team Profile' ? '90px' : 
+                         authButtons.primaryLabel === 'Login' ? '60px' : '80px'
+              }}
             >
-              Login
+              <span className="block">
+                {authButtons.primaryLabel === 'Team Profile' ? (
+                  <>
+                    <span className="block sm:inline">Team</span>
+                    <span className="block sm:inline sm:ml-1">Profile</span>
+                  </>
+                ) : (
+                  authButtons.primaryLabel
+                )}
+              </span>
             </Link>
-            {/* Register button - Optimized for mobile */}
+            {/* Secondary Auth button - Enhanced mobile responsiveness */}
             <Link
-              href="/register"
-              className="btn-primary px-2 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2.5 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm md:text-base min-h-[36px] sm:min-h-[40px] md:min-h-[44px] min-w-[70px] sm:min-w-[90px] md:min-w-[110px] flex items-center justify-center whitespace-nowrap"
+              href={authButtons.secondaryRoute}
+              className={`btn-primary px-2 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2.5 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm md:text-base min-h-[36px] sm:min-h-[40px] md:min-h-[44px] flex items-center justify-center text-center leading-tight ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              style={{
+                minWidth: authButtons.secondaryLabel === 'Team Login' ? '90px' : 
+                         authButtons.secondaryLabel === 'Register Now' ? '100px' : '90px'
+              }}
             >
-              <span className="hidden sm:inline">Register Now</span>
-              <span className="sm:hidden">Register</span>
+              <span className="block">
+                {authButtons.secondaryLabel === 'Team Login' ? (
+                  <>
+                    <span className="block sm:inline">Team</span>
+                    <span className="block sm:inline sm:ml-1">Login</span>
+                  </>
+                ) : authButtons.secondaryLabel === 'Register Now' ? (
+                  <>
+                    <span className="block sm:inline">Register</span>
+                    <span className="block sm:inline sm:ml-1">Now</span>
+                  </>
+                ) : (
+                  authButtons.secondaryLabel
+                )}
+              </span>
             </Link>
           </div>
         </div>
@@ -125,7 +187,7 @@ function ModernHeroSection() {
 function EventPlanComponent() {
   const events = [
     {
-      date: "01",
+      date: "15",
       month: "NOV",
       title: "Registration Deadline",
       time: "11:59 PM",
@@ -133,21 +195,21 @@ function EventPlanComponent() {
     },
 
     {
-      date: "03",
+      date: "16",
       month: "NOV",
       title: "Preliminary Round",
       time: "4.00pm - 6.00 pm",
       location: "AC-101, AC-116, AC-104",
     },
     {
-      date: "04",
+      date: "17",
       month: "NOV",
       title: "Finalist Announcement",
       time: "12.00 pm-4.00 pm",
       location: "Dig the data website",
     },
     {
-      date: "05",
+      date: "18",
       month: "NOV",
       title: "Final Round",
       time: "12.00 pm-5.00 pm",
@@ -250,13 +312,23 @@ function EventPlanComponent() {
   );
 }
 
+// Type definition for event structure
+interface EventItem {
+  id: number;
+  title: string;
+  year: string;
+  image: string;
+  participants: string;
+  description: string;
+  highlights: string[];
+}
+
 // Enhanced Previous Events Gallery Component with Slide System
 function PreviousEventsGallery() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [direction, setDirection] = useState("next");
 
-  const events = [
+  const events: EventItem[] = [
     {
       id: 1,
       title: "Dig The Data 3.0",
@@ -413,16 +485,15 @@ function PreviousEventsGallery() {
   // Auto-slide functionality
   useEffect(() => {
     const interval = setInterval(() => {
-      handleNext();
+      setCurrentSlide((prev) => (prev + 1) % events.length);
     }, 5000); // Change slide every 5 seconds
 
     return () => clearInterval(interval);
-  }, []); // Empty dependency array to prevent infinite re-renders
+  }, [events.length]);
 
   const handleNext = () => {
     if (isAnimating) return;
     setIsAnimating(true);
-    setDirection("next");
 
     setTimeout(() => {
       setCurrentSlide((prev) => (prev + 1) % events.length);
@@ -433,7 +504,6 @@ function PreviousEventsGallery() {
   const handlePrev = () => {
     if (isAnimating) return;
     setIsAnimating(true);
-    setDirection("prev");
 
     setTimeout(() => {
       setCurrentSlide((prev) => (prev - 1 + events.length) % events.length);
@@ -444,7 +514,6 @@ function PreviousEventsGallery() {
   const goToSlide = (index: number) => {
     if (isAnimating || index === currentSlide) return;
     setIsAnimating(true);
-    setDirection(index > currentSlide ? "next" : "prev");
 
     setTimeout(() => {
       setCurrentSlide(index);
@@ -453,7 +522,7 @@ function PreviousEventsGallery() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <>
       {/* Header */}
       <div className="text-center mb-16">
         <h2 className="text-6xl md:text-8xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-4 leading-tight">
@@ -592,7 +661,7 @@ function PreviousEventsGallery() {
           </span>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

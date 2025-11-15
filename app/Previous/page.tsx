@@ -1,7 +1,7 @@
 // app/Previous/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -51,15 +51,7 @@ export default function PreviousPage() {
   const [direction, setDirection] = useState('right');
 
   // Auto-slide functionality
-  useEffect(() => {
-    const interval = setInterval(() => {
-      handleNext();
-    }, 3000); // Change image every 3 seconds
-
-    return () => clearInterval(interval);
-  }, [currentIndex]);
-
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (isAnimating) return;
     setIsAnimating(true);
     setDirection('right');
@@ -68,7 +60,15 @@ export default function PreviousPage() {
       setCurrentIndex((prev) => (prev + 1) % images.length);
       setIsAnimating(false);
     }, 300);
-  };
+  }, [isAnimating, images.length]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      handleNext();
+    }, 3000); // Change image every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [handleNext]);
 
   const handlePrev = () => {
     if (isAnimating) return;
