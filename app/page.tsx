@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Footer from "./Footer/page";
 import BannerSection from "./Banner-Section/page";
 import LegacyPage from "./Legacy/page";
@@ -117,30 +117,13 @@ function ModernNavigation() {
                 )}
               </span>
             </Link>
-            {/* Secondary Auth button - Enhanced mobile responsiveness */}
+            {/* Register button - Optimized for mobile */}
             <Link
-              href={authButtons.secondaryRoute}
-              className={`btn-primary px-2 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2.5 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm md:text-base min-h-[36px] sm:min-h-[40px] md:min-h-[44px] flex items-center justify-center text-center leading-tight ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              style={{
-                minWidth: authButtons.secondaryLabel === 'Team Login' ? '90px' : 
-                         authButtons.secondaryLabel === 'Register Now' ? '100px' : '90px'
-              }}
+              href="/register"
+              className="btn-primary px-2 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2.5 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm md:text-base min-h-[36px] sm:min-h-[40px] md:min-h-[44px] min-w-[70px] sm:min-w-[90px] md:min-w-[110px] flex items-center justify-center whitespace-nowrap"
             >
-              <span className="block">
-                {authButtons.secondaryLabel === 'Team Login' ? (
-                  <>
-                    <span className="block sm:inline">Team</span>
-                    <span className="block sm:inline sm:ml-1">Login</span>
-                  </>
-                ) : authButtons.secondaryLabel === 'Register Now' ? (
-                  <>
-                    <span className="block sm:inline">Register</span>
-                    <span className="block sm:inline sm:ml-1">Now</span>
-                  </>
-                ) : (
-                  authButtons.secondaryLabel
-                )}
-              </span>
+              <span className="hidden sm:inline">Register Now</span>
+              <span className="sm:hidden">Register</span>
             </Link>
           </div>
         </div>
@@ -485,15 +468,16 @@ function PreviousEventsGallery() {
   // Auto-slide functionality
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % events.length);
+      handleNext();
     }, 5000); // Change slide every 5 seconds
 
     return () => clearInterval(interval);
-  }, [events.length]);
+  }, []); // Empty dependency array to prevent infinite re-renders
 
   const handleNext = () => {
     if (isAnimating) return;
     setIsAnimating(true);
+    setDirection("next");
 
     setTimeout(() => {
       setCurrentSlide((prev) => (prev + 1) % events.length);
@@ -504,6 +488,7 @@ function PreviousEventsGallery() {
   const handlePrev = () => {
     if (isAnimating) return;
     setIsAnimating(true);
+    setDirection("prev");
 
     setTimeout(() => {
       setCurrentSlide((prev) => (prev - 1 + events.length) % events.length);
@@ -514,6 +499,7 @@ function PreviousEventsGallery() {
   const goToSlide = (index: number) => {
     if (isAnimating || index === currentSlide) return;
     setIsAnimating(true);
+    setDirection(index > currentSlide ? "next" : "prev");
 
     setTimeout(() => {
       setCurrentSlide(index);
@@ -541,7 +527,11 @@ function PreviousEventsGallery() {
         {/* Slide Container */}
         <div className="relative overflow-hidden rounded-3xl bg-gray-900/80 backdrop-blur-xl border border-cyan-500/30 shadow-2xl">
           {/* Current Slide */}
-          <div className={`transition-all duration-500 ease-in-out ${isAnimating ? 'opacity-50 scale-95' : 'opacity-100 scale-100'}`}>
+          <div
+            className={`transition-all duration-500 ease-in-out ${isAnimating ? 'opacity-50 scale-95' : 'opacity-100 scale-100'} ${
+              direction === "next" ? "animate-slide-next" : "animate-slide-prev"
+            }`}
+          >
             <div className="grid md:grid-cols-2 gap-8 p-8 md:p-12">
               {/* Image Section */}
               <div className="relative group">

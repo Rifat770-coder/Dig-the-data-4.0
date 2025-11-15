@@ -6,18 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 // Use native <img> for external Appwrite URLs to avoid Next.js image optimizer 500 errors
 import { Models } from 'appwrite';
-import { databases, DATABASE_ID, USERS_COLLECTION_ID, QUESTION_SET_COLLECTION_ID, getProfilePictureUrl, getBkashReceiptUrl } from '@/lib/appwrite';
-import { Query } from 'appwrite';
-import AuthModeToggle from '@/components/AuthModeToggle';
-import { 
-  createTeam, 
-  getAllTeams, 
-  deleteTeam, 
-  updateTeam,
-  Team,
-  TeamValidationError
-} from '@/lib/teams';
-
+import { databases, DATABASE_ID, USERS_COLLECTION_ID, getProfilePictureUrl, getBkashReceiptUrl } from '@/lib/appwrite';
 
 interface UserData extends Models.Document {
   name: string;
@@ -422,26 +411,13 @@ export default function AdminPage() {
         throw new Error('Appwrite configuration is missing. Please check your environment variables.');
       }
       
-      try {
-        const response = await databases.listDocuments(
-          DATABASE_ID,
-          USERS_COLLECTION_ID,
-          [Query.limit(1000)] // Fetch up to 1000 users (default is 25)
-        );
-        
-        setUsers(response.documents as unknown as UserData[]);
-        setError(null);
-      } catch (collectionError: unknown) {
-        // Handle collection not found error specifically
-        const error = collectionError as { code?: number; message?: string };
-        if (error?.code === 404 || error?.message?.includes('Collection')) {
-          console.warn('Users collection not found in Appwrite. This is expected during initial setup.');
-          setUsers([]);
-          setError('Users collection not found. This is normal during initial setup. Users will appear here once they start registering.');
-          return;
-        }
-        throw collectionError;
-      }
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        USERS_COLLECTION_ID
+      );
+      
+      setUsers(response.documents as unknown as UserData[]);
+      setError(null);
     } catch (err: unknown) {
       console.error('Error fetching users:', err);
       
@@ -452,10 +428,17 @@ export default function AdminPage() {
           errorMessage = 'Network error: Unable to connect to the database. Please check your internet connection and try again.';
         } else if (err.message.includes('Unauthorized')) {
           errorMessage = 'Authentication error: Invalid credentials or expired session.';
-        } else if (err.message.includes('Not Found') || err.message.includes('Collection')) {
+        } else if (err.message.includes('Not Found')) {
           errorMessage = 'Database error: Collection not found. Please check your database configuration.';
         } else {
           errorMessage = err.message;
+        }
+      } else if (typeof err === 'object' && err !== null) {
+        const errorObj = err as { message?: string; code?: number };
+        if (errorObj.message?.includes('missing scope')) {
+          errorMessage = 'Permission error: The database collection needs read permissions for guests. Go to Appwrite Console → Database → Collection 15 → Settings → Permissions and add "Any" role with Read permission.';
+        } else if (errorObj.message) {
+          errorMessage = errorObj.message;
         }
       }
       
@@ -554,7 +537,7 @@ export default function AdminPage() {
               <th>Email</th>
               <th>User ID</th>
               <th>Department</th>
-             
+              <th>Phone</th>
               <th>Registered</th>
             </tr>
           </thead>

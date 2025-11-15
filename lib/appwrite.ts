@@ -15,7 +15,7 @@ export const storage = new Storage(client);
 export const getCurrentUser = async () => {
   try {
     return await account.get();
-  } catch (error) {
+  } catch {
     // User is not authenticated, return null instead of throwing
     return null;
   }
