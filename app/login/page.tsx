@@ -1,59 +1,37 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { account } from '@/lib/appwrite';
-import TeamLogin from '@/components/TeamLogin';
 
-function LoginContent() {
-  const searchParams = useSearchParams();
-  const [loginType, setLoginType] = useState<'individual' | 'team'>('individual');
-  const [formData, setFormData] = useState<{ email: string; password: string }>({
+export default function LoginPage() {
+  const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [isVisible, setIsVisible] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     setIsVisible(true);
-    
-    // Check URL parameter for login type
-    const typeParam = searchParams.get('type');
-    if (typeParam === 'team') {
-      setLoginType('team');
-    } else if (typeParam === 'individual') {
-      setLoginType('individual');
-    }
-    
-    // Check if user is already logged in (only for individual)
-    if (loginType === 'individual') {
-      checkAuthStatus();
-    }
+    // Check if user is already logged in
+    checkAuthStatus();
     
     // Check if user just registered
-    if (searchParams.get('registered') === 'true') {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('registered') === 'true') {
       setMessage({ 
         type: 'success', 
         text: 'Registration successful! You can now sign in with your credentials.' 
       });
     }
-    
-    // Check if session expired
-    if (searchParams.get('expired') === 'true') {
-      setMessage({ 
-        type: 'error', 
-        text: 'Your session has expired. Please login again to continue.' 
-      });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, loginType]);
+  }, []);
 
   const checkAuthStatus = async () => {
     try {
@@ -62,7 +40,7 @@ function LoginContent() {
         // User is already logged in, redirect to profile or dashboard
         router.push('/profile');
       }
-    } catch {
+    } catch (error) {
       // User is not logged in, which is expected for login page
       console.log('User not logged in');
     }
@@ -115,46 +93,34 @@ function LoginContent() {
     setMessage(null);
     
     try {
-      // Clear any existing sessions (both individual and team) before login
+      // First, check if there's an existing session and delete it
       try {
         await account.deleteSession('current');
-        console.log('[Login] Cleared existing Appwrite session');
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         // No existing session, which is fine
-        console.log('[Login] No existing Appwrite session to delete');
-      }
-      
-      // Also clear team session from localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('teamSession');
-        console.log('[Login] Cleared team session from localStorage');
+        console.log('No existing session to delete');
       }
 
-      // Create new individual session with email and password
+      // Create new session with email and password
       const session = await account.createEmailPasswordSession(
         formData.email,
         formData.password
       );
 
       if (session) {
-        console.log('[Login] ✅ Individual login successful');
         setMessage({ 
           type: 'success', 
           text: 'Login successful! Redirecting...' 
         });
         
-        // Check if there's a redirect URL from team profile auth check
-        const nextUrl = searchParams.get('next');
-        const redirectUrl = nextUrl || '/profile';
-        
-        // Redirect to profile page (or next page) after successful login
+        // Redirect to profile page after successful login
         setTimeout(() => {
-          router.push(redirectUrl);
+          router.push('/profile');
         }, 1500);
       }
     } catch (error: unknown) {
-      console.error('[Login] Individual login error:', error);
+      console.error('Login error:', error);
       
       // Handle specific Appwrite error messages
       let errorMessage = 'Login failed. Please try again.';
@@ -243,18 +209,8 @@ function LoginContent() {
             <p className="text-gray-300 text-sm">Sign in to your Dig The Data 4.0 account</p>
           </div>
 
-          {/* Login Type Tabs */}
-          
-
-          {/* Conditional Rendering based on Login Type */}
-          {loginType === 'team' ? (
-            <TeamLogin 
-              onSuccess={(msg) => setMessage({ type: 'success', text: msg })}
-              onError={(msg) => setMessage({ type: 'error', text: msg })}
-            />
-          ) : (
-            // Individual Login Form
-            <div className="glass-card p-8 rounded-2xl border border-white/10 shadow-2xl">
+          {/* Login Form */}
+          <div className="glass-card p-8 rounded-2xl border border-white/10 shadow-2xl">
             <form onSubmit={handleSubmit} className="space-y-6">
               
               {/* Email Field */}
@@ -265,7 +221,7 @@ function LoginContent() {
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   </div>
                   <input
@@ -412,7 +368,6 @@ function LoginContent() {
               </div>
             </form>
           </div>
-          )}
 
           {/* Back to Home */}
           <div className="text-center mt-8">
@@ -429,20 +384,5 @@ function LoginContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading...</p>
-        </div>
-      </div>
-    }>
-      <LoginContent />
-    </Suspense>
   );
 }

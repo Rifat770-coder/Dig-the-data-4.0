@@ -272,37 +272,14 @@ export default function Footer() {
         <div className={`pt-8 border-t border-gray-700/50 transition-all duration-1000 delay-500 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}>
-          {/* Mobile-Optimized Layout */}
-          <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between md:items-center md:gap-6">
-            {/* Copyright Section - Mobile Stacked */}
-            <div className="text-center md:text-left space-y-2 w-full md:w-auto">
-              {/* Year and Event Name */}
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2 text-sm">
-                <span className="text-gray-300">© 2025</span>
-                <span className="text-cyan-400 font-bold">Dig The Data 4.0</span>
-              </div>
-              
-              {/* Rights Reserved - Mobile Friendly */}
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-1.5 text-xs sm:text-sm">
-                <span className="text-gray-400">All rights reserved by</span>
-                <a 
-                  target='_blank' 
-                  href="https://www.linkedin.com/in/minhajul-islam-rifat-986992342/" 
-                  className="text-cyan-400 font-semibold hover:text-cyan-300 transition-colors whitespace-nowrap inline-flex items-center gap-1"
-                >
-                  <span>Minhajul Islam Rifat</span>
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-                    <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-                  </svg>
-                </a>
-              </div>
-              
-              {/* Organizer Info */}
-              <div className="flex items-center justify-center md:justify-start gap-1.5 text-xs">
-                <span className="text-gray-400">Organized by</span>
-                <span className="text-cyan-400 font-semibold whitespace-nowrap">NITER Computer Club (NCC)</span>
-              </div>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="text-center md:text-left">
+              <p className="text-gray-300 text-sm mb-2">
+                © 2025 <span className="text-cyan-400 font-semibold">Dig The Data 4.0</span>. All rights reserved.
+              </p>
+              <p className="text-gray-400 text-xs">
+                Organized by <span className="text-cyan-400">NITER Computer Club (NCC)</span>
+              </p>
             </div>
 
           </div>

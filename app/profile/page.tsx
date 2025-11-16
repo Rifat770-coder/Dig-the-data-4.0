@@ -48,9 +48,7 @@ export default function ProfilePage() {
   const fetchUserData = async () => {
     try {
       // Get current logged-in user
-      console.log('[Profile] Attempting to get current user session...');
       const currentUser = await account.get();
-      console.log('[Profile] ✅ User authenticated:', currentUser.email);
       setUser(currentUser);
 
       // Clear previous data to prevent stale state
@@ -59,19 +57,15 @@ export default function ProfilePage() {
       setBkashReceiptUrl(null);
 
       // Fetch user data from database using email
-      console.log('[Profile] Fetching user data for email:', currentUser.email);
       const response = await databases.listDocuments(
         DATABASE_ID,
         USERS_COLLECTION_ID,
         [Query.equal('email', currentUser.email)]
       );
 
-      console.log('[Profile] User documents found:', response.documents.length);
-
       if (response.documents.length > 0) {
         const data = response.documents[0] as unknown as UserData;
         const docId = (response.documents[0] as { $id: string }).$id;
-        console.log('[Profile] ✅ User data loaded:', { name: data.name, userId: data.userId });
         setUserData(data);
         setDocumentId(docId);
         
@@ -86,88 +80,10 @@ export default function ProfilePage() {
           const receiptUrl = getBkashReceiptUrl(data.bkashTransactionPhotoId);
           setBkashReceiptUrl(receiptUrl);
         }
-      } else {
-        // User is authenticated but has no profile data in users collection
-        console.warn('[Profile] ⚠️ No user document found in users collection for email:', currentUser.email);
-        console.log('[Profile] 🔧 Attempting to create minimal profile document...');
-        
-        // Auto-create a minimal profile document for authenticated users
-        try {
-          const { ID } = await import('appwrite');
-          const timestamp = Date.now();
-          const randomStr = Math.random().toString(36).substring(2, 11);
-          const autoUserId = `user_${timestamp}_${randomStr}`;
-          
-          const newDocument = await databases.createDocument(
-            DATABASE_ID,
-            USERS_COLLECTION_ID,
-            ID.unique(),
-            {
-              name: currentUser.name || 'User',
-              email: currentUser.email,
-              userId: autoUserId,
-              department: 'Not Set',
-              Phone: 0,
-              bkashTransactionPhotoId: null, // Required field - null for auto-created profiles
-              createdAt: new Date().toISOString()
-            }
-          );
-          
-          console.log('[Profile] ✅ Auto-created profile document:', { userId: autoUserId });
-          const data = newDocument as unknown as UserData;
-          const docId = (newDocument as { $id: string }).$id;
-          setUserData(data);
-          setDocumentId(docId);
-          
-          // Show success message to user
-          alert('Welcome! Your profile has been created. Please update your information in the profile settings.');
-        } catch (createError: unknown) {
-          console.error('[Profile] ❌ Failed to auto-create profile document:', createError);
-          
-          // Show detailed error information
-          if (createError && typeof createError === 'object') {
-            const err = createError as { message?: string; code?: number; response?: { message?: string } };
-            console.error('[Profile] Error details:', {
-              message: err.message,
-              code: err.code,
-              response: err.response
-            });
-            
-            if (err.message?.includes('required attribute')) {
-              console.error('[Profile] Missing required field in Appwrite schema');
-              console.error('[Profile] Please check your users collection attributes in Appwrite Console');
-            }
-          }
-          
-          console.error('[Profile] User may have been created directly in Appwrite without going through registration');
-          console.error('[Profile] Please create your profile manually via the "Complete Registration" button below');
-        }
       }
-    } catch (error: unknown) {
-      console.error('[Profile] Error fetching user data:', error);
-      
-      // Check if it's an authentication error
-      if (error && typeof error === 'object') {
-        const err = error as { code?: number; type?: string; message?: string };
-        
-        if (err.code === 401 || err.type === 'general_unauthorized_scope') {
-          console.log('[Profile] 🔒 Session expired or invalid. Redirecting to login...');
-          
-          // Clear any stale session data
-          try {
-            localStorage.removeItem('teamSession');
-          } catch {
-            // Ignore localStorage errors
-          }
-          
-          // Redirect to login with return URL
-          router.push('/login?type=individual&expired=true');
-          return;
-        }
-      }
-      
-      // For other errors, still redirect to login
-      console.log('[Profile] Redirecting to login due to error');
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      // If not authenticated, redirect to login
       router.push('/login');
     } finally {
       setLoading(false);
@@ -264,55 +180,15 @@ export default function ProfilePage() {
   if (!user || !userData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center p-4">
-        <div className="bg-gray-800/80 backdrop-blur-xl border border-red-500/30 rounded-2xl p-8 text-center max-w-md">
-          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
+        <div className="bg-gray-800/80 backdrop-blur-xl border border-red-500/30 rounded-2xl p-8 text-center">
           <h2 className="text-2xl font-bold text-red-400 mb-4">Profile Not Found</h2>
-          {user && !userData ? (
-            <>
-              <p className="text-gray-300 mb-2">You are logged in as:</p>
-              <p className="text-cyan-400 font-mono text-sm mb-4">{user.email}</p>
-              <p className="text-gray-300 mb-6">
-                However, we couldn&apos;t find your registration data in our system. 
-                This usually means you need to complete the registration process.
-              </p>
-              <div className="flex flex-col gap-3">
-                <Link
-                  href="/register"
-                  className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg font-semibold hover:from-cyan-400 hover:to-blue-400 transition-all duration-300"
-                >
-                  Complete Registration
-                </Link>
-                <button
-                  onClick={async () => {
-                    try {
-                      await account.deleteSession('current');
-                      router.push('/');
-                    } catch (error) {
-                      console.error('Logout error:', error);
-                      router.push('/');
-                    }
-                  }}
-                  className="px-6 py-3 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-600 transition-all duration-300"
-                >
-                  Logout & Go Home
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="text-gray-300 mb-6">We couldn&apos;t find your profile data.</p>
-              <Link
-                href="/"
-                className="inline-block px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg font-semibold hover:from-cyan-400 hover:to-blue-400 transition-all duration-300"
-              >
-                Go Home
-              </Link>
-            </>
-          )}
+          <p className="text-gray-300 mb-6">We couldn&apos;tfind your profile data.</p>
+          <Link
+            href="/"
+            className="inline-block px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg font-semibold hover:from-cyan-400 hover:to-blue-400 transition-all duration-300"
+          >
+            Go Home
+          </Link>
         </div>
       </div>
     );
