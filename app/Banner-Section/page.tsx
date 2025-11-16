@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 
 export default function BannerSection() {
   const [isVisible, setIsVisible] = useState(false);
+  // Set to true for "Registration Open" or false for "Registration Closed"
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
@@ -14,7 +16,7 @@ export default function BannerSection() {
   return (
     <section className="relative py-20 overflow-hidden">
       {/* Modern Background with Gradients */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900/50 to-slate-900"></div>
+      <div className="absolute inset-0 bg-linear-to-br from-slate-900 via-blue-900/50 to-slate-900"></div>
 
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
@@ -46,7 +48,7 @@ export default function BannerSection() {
                   height={100}
                   className="object-contain rounded-2xl shadow-lg transition-transform duration-300 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 rounded-2xl bg-linear-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white mb-2">
@@ -68,7 +70,7 @@ export default function BannerSection() {
                   height={80}
                   className="object-contain rounded-2xl shadow-lg transition-transform duration-300 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 rounded-2xl bg-linear-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
               <div>
                 <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
@@ -89,9 +91,9 @@ export default function BannerSection() {
           <div className="modern-card overflow-hidden">
             <div className="grid lg:grid-cols-2 gap-0">
               {/* Left Side - Logo/Image */}
-              <div className="relative p-8 md:p-12 lg:p-16 flex items-center justify-center bg-gradient-to-br from-slate-800/50 to-slate-900/50">
+              <div className="relative p-8 md:p-12 lg:p-16 flex items-center justify-center bg-linear-to-br from-slate-800/50 to-slate-900/50">
                 <div className="relative group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-linear-to-r from-cyan-500/20 to-blue-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className="relative w-full max-w-md aspect-square flex items-center justify-center">
                     <Image
                       src="/20251018_003312.jpg"
@@ -108,7 +110,7 @@ export default function BannerSection() {
               <div className="relative p-8 md:p-12 lg:p-16 flex flex-col justify-center">
                 {/* Decorative Elements */}
                 <div className="absolute top-8 right-8 w-20 h-20 border-2 border-cyan-500/20 rounded-2xl rotate-12 opacity-50"></div>
-                <div className="absolute bottom-8 left-8 w-16 h-16 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-full"></div>
+                <div className="absolute bottom-8 left-8 w-16 h-16 bg-linear-to-r from-cyan-500/10 to-blue-500/10 rounded-full"></div>
 
                 {/* Title */}
                 <div className="mb-8">
@@ -119,7 +121,7 @@ export default function BannerSection() {
                     <span className="text-3xl md:text-4xl font-bold text-white">
                       4.0
                     </span>
-                    <div className="h-1 flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
+                    <div className="h-1 flex-1 bg-linear-to-r from-cyan-500 to-blue-500 rounded-full"></div>
                   </div>
                 </div>
 
@@ -171,7 +173,7 @@ export default function BannerSection() {
                       <span className="whitespace-nowrap">Rules Book</span>
                     </span>
                     {/* Hover effect overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
+                    <div className="absolute inset-0 bg-linear-to-r from-cyan-600/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
                   </a>
 
                   <a
@@ -197,7 +199,7 @@ export default function BannerSection() {
                       <span className="whitespace-nowrap">Registration Rules</span>
                     </span>
                     {/* Hover effect overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
+                    <div className="absolute inset-0 bg-linear-to-r from-cyan-600/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
                   </a>
                 </div>
 
@@ -278,8 +280,12 @@ export default function BannerSection() {
           }`}
         >
           <div className="inline-flex items-center gap-4 modern-card px-8 py-4">
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-gray-300 font-medium">Registration Open</span>
+            <div className={`w-3 h-3 rounded-full animate-pulse ${
+              isRegistrationOpen ? 'bg-green-500' : 'bg-red-500'
+            }`}></div>
+            <span className="text-gray-300 font-medium">
+              {isRegistrationOpen ? 'Registration Open' : 'Registration Closed'}
+            </span>
           </div>
         </div>
       </div>
@@ -294,7 +300,8 @@ export default function BannerSection() {
       {/* Decorative Floating Elements */}
       <div className="absolute top-20 right-10 w-4 h-4 bg-cyan-500/30 rounded-full animate-bounce delay-1000"></div>
       <div className="absolute bottom-20 left-10 w-6 h-6 border-2 border-blue-500/30 rounded-lg rotate-45 animate-pulse"></div>
-      <div className="absolute top-1/2 right-20 w-8 h-8 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full animate-pulse delay-500"></div>
+      <div className="absolute top-1/2 right-20 w-8 h-8 bg-linear-to-r from-purple-500/20 to-pink-500/20 rounded-full animate-pulse delay-500"></div>
     </section>
   );
 }
+

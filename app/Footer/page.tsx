@@ -7,6 +7,8 @@ import { useState, useEffect } from 'react';
 
 export default function Footer() {
   const [isVisible, setIsVisible] = useState(false);
+  // Set to true for "Registration Open" or false for "Registration Closed"
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -98,7 +100,7 @@ export default function Footer() {
   return (
     <footer id="footer" className="relative overflow-hidden">
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-800/95 to-slate-900/90"></div>
+      <div className="absolute inset-0 bg-linear-to-t from-slate-900 via-slate-800/95 to-slate-900/90"></div>
       
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
@@ -140,7 +142,7 @@ export default function Footer() {
                        className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-105 group-focus:scale-105 object-cover"
                        priority
                      />
-                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300"></div>
+                     <div className="absolute inset-0 rounded-2xl bg-linear-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300"></div>
                      {/* Touch-friendly overlay for mobile */}
                      <div className="absolute inset-0 rounded-2xl bg-transparent group-active:bg-cyan-500/10 transition-colors duration-150"></div>
                    </div>
@@ -161,7 +163,7 @@ export default function Footer() {
                        className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-105 group-focus:scale-105 object-cover"
                        priority
                      />
-                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300"></div>
+                     <div className="absolute inset-0 rounded-2xl bg-linear-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300"></div>
                      {/* Touch-friendly overlay for mobile */}
                      <div className="absolute inset-0 rounded-2xl bg-transparent group-active:bg-cyan-500/10 transition-colors duration-150"></div>
                    </div>
@@ -177,8 +179,10 @@ export default function Footer() {
                   Organized by NITER Computer Club (NCC). An exclusive data analytics competition for NITER 15th batch students.
                 </p>
                 <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-cyan-400">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span>Registration Open</span>
+                  <div className={`w-2 h-2 rounded-full animate-pulse ${
+                    isRegistrationOpen ? 'bg-green-500' : 'bg-red-500'
+                  }`}></div>
+                  <span>{isRegistrationOpen ? 'Registration Open' : 'Registration Closed'}</span>
                 </div>
               </div>
             </div>
@@ -188,7 +192,7 @@ export default function Footer() {
           <div className="col-span-full lg:col-span-1">
             <h4 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-6 relative inline-block">
               Quick Links
-              <div className="absolute -bottom-1 sm:-bottom-2 left-0 w-16 sm:w-20 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
+              <div className="absolute -bottom-1 sm:-bottom-2 left-0 w-16 sm:w-20 h-0.5 bg-linear-to-r from-cyan-500 to-blue-500 rounded-full"></div>
             </h4>
             {/* Mobile: Single row with separators, Desktop: Vertical */}
             <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-2 md:flex-col md:items-start md:space-y-3">
@@ -212,7 +216,7 @@ export default function Footer() {
           <div className="col-span-full lg:col-span-2">
             <h4 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-6 relative inline-block">
               Contact Us
-              <div className="absolute -bottom-1 sm:-bottom-2 left-0 w-16 sm:w-20 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
+              <div className="absolute -bottom-1 sm:-bottom-2 left-0 w-16 sm:w-20 h-0.5 bg-linear-to-r from-cyan-500 to-blue-500 rounded-full"></div>
             </h4>
             {/* Mobile: 1 column, Desktop: 1 column (vertical stack) */}
             <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:gap-y-4">
@@ -224,14 +228,14 @@ export default function Footer() {
                   rel={contact.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                   className="flex items-start gap-2.5 sm:gap-3 text-gray-300 hover:text-cyan-400 transition-colors duration-300 group"
                 >
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300 flex-shrink-0 mt-0.5">
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300 shrink-0 mt-0.5">
                     {contact.icon}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-[11px] sm:text-xs text-gray-400 uppercase tracking-wide mb-0.5 font-semibold">
                       {contact.label}
                     </div>
-                    <div className="text-sm sm:text-base text-gray-200 break-words leading-tight">
+                    <div className="text-sm sm:text-base text-gray-200 wrap-break-word leading-tight">
                       {contact.value}
                     </div>
                   </div>
@@ -244,7 +248,7 @@ export default function Footer() {
           <div className="col-span-full lg:col-span-1">
             <h4 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-6 relative inline-block">
               Follow Us
-              <div className="absolute -bottom-1 sm:-bottom-2 left-0 w-16 sm:w-20 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
+              <div className="absolute -bottom-1 sm:-bottom-2 left-0 w-16 sm:w-20 h-0.5 bg-linear-to-r from-cyan-500 to-blue-500 rounded-full"></div>
             </h4>
             {/* Circular social icons */}
             <div className="flex items-center gap-4 sm:gap-5">
@@ -312,7 +316,7 @@ export default function Footer() {
         <div className="absolute bottom-8 right-8">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 hover:scale-110 group"
+            className="w-12 h-12 bg-linear-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 hover:scale-110 group"
             aria-label="Scroll to top"
           >
             <svg className="w-5 h-5 transition-transform duration-300 group-hover:-translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -324,3 +328,4 @@ export default function Footer() {
     </footer>
   );
 }
+
