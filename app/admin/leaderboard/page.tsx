@@ -16,7 +16,7 @@ export default function LeaderboardPage() {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isCountdownRunning, setIsCountdownRunning] = useState(false);
 
-  const ADMIN_PASSWORD = 'nccrifat';
+  const ADMIN_PASSWORD = 'ncc-rifat';
 
   useEffect(() => {
     const authenticated = sessionStorage.getItem('adminLeaderboardAuth');

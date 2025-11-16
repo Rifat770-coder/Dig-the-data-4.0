@@ -84,7 +84,7 @@ export default function AdminPage() {
   const [departmentFilter, setDepartmentFilter] = useState('');
 
   // Admin password (in production, this should be environment variable)
-  const ADMIN_PASSWORD = 'nccrifat';
+  const ADMIN_PASSWORD = 'ncc-rifat';
 
   useEffect(() => {
     // Check if already authenticated
