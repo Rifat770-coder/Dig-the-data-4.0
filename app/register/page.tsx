@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ID } from 'appwrite';
 import { account, databases, storage, DATABASE_ID, USERS_COLLECTION_ID, PROFILE_PICTURES_BUCKET_ID, BKASH_RECEIPTS_BUCKET_ID } from '@/lib/appwrite';
+import { useIsRegistrationEnabled } from '@/lib/auth-context';
 
 interface FormData {
   name: string;
@@ -21,6 +22,10 @@ interface FormData {
 
 export default function RegisterPage() {
   const router = useRouter();
+  
+  // Authentication mode hooks
+  const isRegistrationEnabled = useIsRegistrationEnabled();
+  
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -286,6 +291,26 @@ export default function RegisterPage() {
       // Log full server response to debug
       console.error('Appwrite error:', error);
 
+      // Check for collection not found error
+      if (error && typeof error === 'object') {
+        const e = error as Record<string, unknown>;
+        
+        // Check if it's a 404 error or contains "Collection" in the message
+        const isCollectionError = (
+          (e.code === 404 || e.status === 404) ||
+          (e.message && typeof e.message === 'string' && e.message.includes('Collection'))
+        );
+        
+        if (isCollectionError) {
+          console.warn('Users collection not found - this is expected during initial setup');
+          setMessage({ 
+            type: 'error', 
+            text: 'Registration is temporarily unavailable. The system is still being set up. Please try again later or contact support.' 
+          });
+          return;
+        }
+      }
+
       // Safely extract a message from an unknown error shape
       function getErrorMessage(err: unknown): string {
         if (err && typeof err === 'object') {
@@ -338,10 +363,13 @@ export default function RegisterPage() {
           <span className="font-medium">Back to Home</span>
         </Link>
 
-        <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-2">Registration</h1>
-          <p className="text-sm sm:text-base text-gray-300">Fill in your details to register</p>
-        </div>
+        {/* Conditional rendering based on registration mode */}
+        {isRegistrationEnabled ? (
+          <>
+            <div className="text-center mb-6 sm:mb-8">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-2">Registration</h1>
+              <p className="text-sm sm:text-base text-gray-300">Fill in your details to register</p>
+            </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5" suppressHydrationWarning={true}>
           {/* Profile Picture Upload */}
@@ -543,7 +571,8 @@ export default function RegisterPage() {
                     <li>1. 01744368707</li>
                     <li>2. 01630904798</li>
                     <li>3. 01882038517</li>
-                    <li>4. 01570292546</li>
+                    <li>4. 01798506446</li>
+                    <li>5. 01570292546</li>
                   </ul>
                 </div>
                 
@@ -655,6 +684,27 @@ export default function RegisterPage() {
             {loading ? 'Registering...' : uploadingImage ? 'Uploading Image...' : 'Register'}
           </button>
         </form>
+          </>
+        ) : (
+          <div className="text-center py-8">
+            <div className="mb-6">
+              <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <h2 className="text-xl font-bold text-red-400 mb-2">Registration Closed</h2>
+              <p className="text-gray-300 mb-4">Registration is currently not available.</p>
+            </div>
+            <Link 
+              href="/login"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium"
+            >
+              <span>Go to Login</span>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

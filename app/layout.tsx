@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { AuthModeProvider } from "@/lib/auth-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -68,7 +69,9 @@ export default function RootLayout({
         
         {/* Main Content */}
         <div className="relative z-10">
-          {children}
+          <AuthModeProvider>
+            {children}
+          </AuthModeProvider>
         </div>
         
         {/* Global Loading Indicator */}

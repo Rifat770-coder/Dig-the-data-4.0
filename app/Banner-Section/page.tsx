@@ -151,8 +151,6 @@ export default function BannerSection() {
                   <a
                     href="/Rulebook of DTD 4.0.pdf"
                     download="Dig The Data 4.0 Rulebook.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="btn-primary px-6 sm:px-8 py-3 sm:py-4 text-white text-base sm:text-lg font-bold rounded-2xl min-w-[160px] sm:min-w-[180px] lg:min-w-[200px] text-center group relative overflow-hidden transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-cyan-500/50 active:scale-95"
                   >
                     <span className="relative z-10 flex items-center justify-center gap-2">
@@ -179,8 +177,6 @@ export default function BannerSection() {
                   <a
                     href="/Registration Book of DTD 4.0.pdf"
                     download="Dig The Data 4.0 Registration Rules.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="btn-primary px-6 sm:px-8 py-3 sm:py-4 text-white text-base sm:text-lg font-bold rounded-2xl min-w-[160px] sm:min-w-[180px] lg:min-w-[200px] text-center group relative overflow-hidden transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-cyan-500/50 active:scale-95"
                   >
                     <span className="relative z-10 flex items-center justify-center gap-2">
