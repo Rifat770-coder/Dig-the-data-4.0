@@ -238,11 +238,25 @@ export default function TeamDashboard() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {teamMembers.map((member) => (
+              {teamMembers.map((member) => {
+                const isLeader = member.userId === team?.teamLeaderId;
+                return (
                 <div
                   key={member.$id}
-                  className="bg-gray-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-2xl p-6 shadow-2xl hover:shadow-cyan-500/10 hover:border-cyan-500/40 transition-all duration-300 group"
+                  className={`backdrop-blur-xl border rounded-2xl p-6 shadow-2xl transition-all duration-300 group relative ${
+                    isLeader
+                      ? 'bg-yellow-500/10 border-yellow-500/30 hover:shadow-yellow-500/10 hover:border-yellow-500/50'
+                      : 'bg-gray-800/50 border-cyan-500/20 hover:shadow-cyan-500/10 hover:border-cyan-500/40'
+                  }`}
                 >
+                  {isLeader && (
+                    <div className="absolute top-2 right-2 px-2 py-1 bg-yellow-500 text-white text-xs font-bold rounded-full flex items-center gap-1 shadow-lg">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      LEADER
+                    </div>
+                  )}
                   <div className="text-center">
                     {/* Avatar */}
                     <div className="relative w-24 h-24 mx-auto mb-4">
@@ -269,10 +283,14 @@ export default function TeamDashboard() {
                     </div>
                     
                     {/* Member Info */}
-                    <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-cyan-400 transition-colors">
+                    <h3 className={`text-xl font-semibold mb-2 group-hover:transition-colors ${
+                      isLeader ? 'text-yellow-300 group-hover:text-yellow-200' : 'text-white group-hover:text-cyan-400'
+                    }`}>
                       {member.name}
                     </h3>
-                    <p className="text-cyan-400 font-medium mb-1">
+                    <p className={`font-medium mb-1 ${
+                      isLeader ? 'text-yellow-400' : 'text-cyan-400'
+                    }`}>
                       {member.department || 'Team Member'}
                     </p>
                     <p className="text-gray-400 text-sm mb-3">
@@ -284,7 +302,8 @@ export default function TeamDashboard() {
                    
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
           

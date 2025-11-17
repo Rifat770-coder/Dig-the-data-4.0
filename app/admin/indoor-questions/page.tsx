@@ -11,6 +11,7 @@ interface QuestionSet {
   set: string; // Question set name
   question: string[]; // Array type in Appwrite
   correctAnswer: string; // Changed to string for text answers
+  alternativeAnswers?: string[]; // Array of alternative correct answers
   points: number;
   hint?: string[]; // Array type in Appwrite
 }
@@ -29,6 +30,7 @@ export default function AdminQuestionsPage() {
     set: 'Default Set',
     question: '',
     correctAnswer: '',
+    alternativeAnswers: '',
     hint: '',
     points: 20
   });
@@ -86,10 +88,16 @@ export default function AdminQuestionsPage() {
     }
 
     try {
+      const alternativeAnswersArray = formData.alternativeAnswers
+        .split('\n')
+        .map(ans => ans.trim())
+        .filter(ans => ans.length > 0);
+
       const newQuestion = {
         set: formData.set,
         question: [formData.question], // Array format for Appwrite
         correctAnswer: formData.correctAnswer,
+        alternativeAnswers: alternativeAnswersArray,
         points: formData.points,
         hint: formData.hint ? [formData.hint] : [] // Array format for Appwrite
       };
@@ -116,10 +124,16 @@ export default function AdminQuestionsPage() {
     if (!editingQuestion || !editingQuestion.$id) return;
 
     try {
+      const alternativeAnswersArray = formData.alternativeAnswers
+        .split('\n')
+        .map(ans => ans.trim())
+        .filter(ans => ans.length > 0);
+
       const updatedQuestion = {
         set: formData.set,
         question: [formData.question], // Array format for Appwrite
         correctAnswer: formData.correctAnswer,
+        alternativeAnswers: alternativeAnswersArray,
         points: formData.points,
         hint: formData.hint ? [formData.hint] : [] // Array format for Appwrite
       };
@@ -165,6 +179,7 @@ export default function AdminQuestionsPage() {
       set: question.set,
       question: question.question[0] || '', // Get first element from array
       correctAnswer: question.correctAnswer,
+      alternativeAnswers: question.alternativeAnswers ? question.alternativeAnswers.join('\n') : '',
       hint: question.hint && question.hint.length > 0 ? question.hint[0] : '', // Get first element from array
       points: question.points
     });
@@ -176,6 +191,7 @@ export default function AdminQuestionsPage() {
       set: 'Default Set',
       question: '',
       correctAnswer: '',
+      alternativeAnswers: '',
       hint: '',
       points: 20
     });
@@ -449,6 +465,20 @@ export default function AdminQuestionsPage() {
                   placeholder="Enter the exact correct answer"
                 />
                 <p className="text-xs text-gray-400 mt-1">Type the exact answer (case-insensitive matching)</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-cyan-300 mb-2">
+                  Alternative Answers (Optional)
+                </label>
+                <textarea
+                  value={formData.alternativeAnswers}
+                  onChange={(e) => setFormData({ ...formData, alternativeAnswers: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 resize-none"
+                  rows={4}
+                  placeholder="Enter alternative correct answers (one per line)&#10;Example:&#10;answer 1&#10;answer 2&#10;answer 3"
+                />
+                <p className="text-xs text-gray-400 mt-1">Add alternative correct answers, one per line. Any of these will be accepted as correct.</p>
               </div>
 
               <div>

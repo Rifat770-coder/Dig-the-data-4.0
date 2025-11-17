@@ -71,6 +71,7 @@ export default function AdminPage() {
     teamCode: '',
     password: '',
     memberIds: [] as string[],
+    teamLeaderId: '',
     questionSetId: '', // Legacy field
     indoorQuestionSetId: '', // Indoor question set
     outdoorQuestionSetId: '' // Outdoor question set
@@ -198,6 +199,7 @@ export default function AdminPage() {
         teamCode: teamForm.teamCode,
         password: teamForm.password,
         memberIds: teamForm.memberIds,
+        teamLeaderId: teamForm.teamLeaderId,
         questionSetId: teamForm.questionSetId, // Legacy field
         indoorQuestionSetId: teamForm.indoorQuestionSetId,
         outdoorQuestionSetId: teamForm.outdoorQuestionSetId
@@ -210,7 +212,8 @@ export default function AdminPage() {
         teamName: '', 
         teamCode: '', 
         password: '', 
-        memberIds: [], 
+        memberIds: [],
+        teamLeaderId: '',
         questionSetId: '',
         indoorQuestionSetId: '',
         outdoorQuestionSetId: ''
@@ -239,6 +242,7 @@ export default function AdminPage() {
         teamCode: teamForm.teamCode,
         password: teamForm.password,
         memberIds: teamForm.memberIds,
+        teamLeaderId: teamForm.teamLeaderId,
         questionSetId: teamForm.questionSetId, // Legacy field
         indoorQuestionSetId: teamForm.indoorQuestionSetId,
         outdoorQuestionSetId: teamForm.outdoorQuestionSetId
@@ -250,7 +254,8 @@ export default function AdminPage() {
         teamName: '', 
         teamCode: '', 
         password: '', 
-        memberIds: [], 
+        memberIds: [],
+        teamLeaderId: '',
         questionSetId: '',
         indoorQuestionSetId: '',
         outdoorQuestionSetId: ''
@@ -334,6 +339,7 @@ export default function AdminPage() {
       teamCode: team.teamCode,
       password: team.password,
       memberIds: team.memberIds || [], // Load existing members
+      teamLeaderId: team.teamLeaderId || '',
       questionSetId: team.questionSetId || '', // Legacy field
       indoorQuestionSetId: team.indoorQuestionSetId || '',
       outdoorQuestionSetId: team.outdoorQuestionSetId || ''
@@ -350,7 +356,8 @@ export default function AdminPage() {
       teamName: '', 
       teamCode: '', 
       password: '', 
-      memberIds: [], 
+      memberIds: [],
+      teamLeaderId: '',
       questionSetId: '',
       indoorQuestionSetId: '',
       outdoorQuestionSetId: ''
@@ -1406,6 +1413,37 @@ export default function AdminPage() {
                 </p>
               </div>
 
+              {/* Team Leader Selection */}
+              <div>
+                <label className="block text-sm font-medium text-yellow-300 mb-2">
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                    Team Leader (Optional)
+                  </span>
+                </label>
+                <select
+                  value={teamForm?.teamLeaderId || ''}
+                  onChange={(e) => setTeamForm(prev => ({ ...prev, teamLeaderId: e.target.value }))}
+                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition"
+                >
+                  <option value="">No Team Leader</option>
+                  {users
+                    .filter(user => teamForm?.memberIds?.includes(user.userId))
+                    .map((user) => (
+                      <option key={user.userId} value={user.userId}>
+                        {user.name} ({user.email})
+                      </option>
+                    ))}
+                </select>
+                <p className="text-xs text-gray-400 mt-1">
+                  {teamForm?.memberIds && teamForm.memberIds.length > 0
+                    ? 'Select a team leader from the assigned team members'
+                    : 'Add team members first, then select a team leader'}
+                </p>
+              </div>
+
               {/* Currently Assigned Members Section */}
               {teamForm?.memberIds && teamForm.memberIds.length > 0 && (
                 <div className="mb-6">
@@ -1417,11 +1455,25 @@ export default function AdminPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
                     {users
                       .filter(user => teamForm.memberIds.includes(user.userId))
-                      .map((user) => (
+                      .map((user) => {
+                        const isLeader = user.userId === teamForm.teamLeaderId;
+                        return (
                         <div
                           key={user.$id}
-                          className="p-4 rounded-lg border bg-cyan-500/20 border-cyan-500/50 text-cyan-300 relative"
+                          className={`p-4 rounded-lg border relative ${
+                            isLeader 
+                              ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-300' 
+                              : 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300'
+                          }`}
                         >
+                          {isLeader && (
+                            <div className="absolute top-2 left-2 px-2 py-0.5 bg-yellow-500/90 text-white text-xs font-bold rounded-full flex items-center gap-1">
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                              LEADER
+                            </div>
+                          )}
                           <button
                             type="button"
                             onClick={() => toggleMemberSelection(user.userId)}
@@ -1433,7 +1485,9 @@ export default function AdminPage() {
                             </svg>
                           </button>
                           <div className="flex items-center gap-3 pr-6">
-                            <div className="w-5 h-5 rounded border-2 bg-cyan-500 border-cyan-500 flex items-center justify-center flex-shrink-0">
+                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                              isLeader ? 'bg-yellow-500 border-yellow-500' : 'bg-cyan-500 border-cyan-500'
+                            }`}>
                               <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                               </svg>
@@ -1445,7 +1499,8 @@ export default function AdminPage() {
                             </div>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     {users.filter(user => teamForm.memberIds.includes(user.userId)).length === 0 && (
                       <div className="col-span-full text-center py-4 text-gray-400">
                         <p className="text-sm">Member details loading... ({teamForm.memberIds.length} member IDs assigned)</p>

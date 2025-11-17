@@ -14,6 +14,7 @@ interface OutdoorQuestionSet {
   set: string; // Question set name
   question: string; // String type (not array) to match Appwrite schema
   correctAnswer: string; // Text answers
+  alternativeAnswers?: string[]; // Array of alternative correct answers
   points: number;
 }
 
@@ -30,6 +31,7 @@ export default function AdminOutdoorQuestionsPage() {
     set: 'Outdoor Set',
     question: '',
     correctAnswer: '',
+    alternativeAnswers: '',
     points: 30
   });
 
@@ -86,10 +88,16 @@ export default function AdminOutdoorQuestionsPage() {
     }
 
     try {
+      const alternativeAnswersArray = formData.alternativeAnswers
+        .split('\n')
+        .map(ans => ans.trim())
+        .filter(ans => ans.length > 0);
+
       const newQuestion = {
         set: formData.set,
         question: formData.question, // String format to match Appwrite schema
         correctAnswer: formData.correctAnswer,
+        alternativeAnswers: alternativeAnswersArray,
         points: formData.points
       };
 
@@ -115,10 +123,16 @@ export default function AdminOutdoorQuestionsPage() {
     if (!editingQuestion || !editingQuestion.$id) return;
 
     try {
+      const alternativeAnswersArray = formData.alternativeAnswers
+        .split('\n')
+        .map(ans => ans.trim())
+        .filter(ans => ans.length > 0);
+
       const updatedQuestion = {
         set: formData.set,
         question: formData.question, // String format to match Appwrite schema
         correctAnswer: formData.correctAnswer,
+        alternativeAnswers: alternativeAnswersArray,
         points: formData.points
       };
 
@@ -163,6 +177,7 @@ export default function AdminOutdoorQuestionsPage() {
       set: question.set,
       question: question.question, // String, not array
       correctAnswer: question.correctAnswer,
+      alternativeAnswers: question.alternativeAnswers ? question.alternativeAnswers.join('\n') : '',
       points: question.points
     });
     setShowAddForm(false);
@@ -173,6 +188,7 @@ export default function AdminOutdoorQuestionsPage() {
       set: 'Outdoor Set',
       question: '',
       correctAnswer: '',
+      alternativeAnswers: '',
       points: 30
     });
   };
@@ -415,7 +431,19 @@ export default function AdminOutdoorQuestionsPage() {
                 <p className="text-xs text-gray-400 mt-1">Type the exact answer (case-insensitive matching)</p>
               </div>
 
-             
+              <div>
+                <label className="block text-sm font-medium text-red-300 mb-2">
+                  Alternative Answers (Optional)
+                </label>
+                <textarea
+                  value={formData.alternativeAnswers}
+                  onChange={(e) => setFormData({ ...formData, alternativeAnswers: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-red-500 resize-none"
+                  rows={4}
+                  placeholder="Enter alternative correct answers (one per line)&#10;Example:&#10;answer 1&#10;answer 2&#10;answer 3"
+                />
+                <p className="text-xs text-gray-400 mt-1">Add alternative correct answers, one per line. Any of these will be accepted as correct.</p>
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-red-300 mb-2">

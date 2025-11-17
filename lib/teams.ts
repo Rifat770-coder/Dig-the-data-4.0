@@ -9,6 +9,7 @@ export interface Team {
   teamCode: string;
   password: string;
   memberIds?: string[];
+  teamLeaderId?: string; // Team leader userId
   questionSetId?: string; // Legacy field for backward compatibility
   indoorQuestionSetId?: string; // Indoor question set assignment
   outdoorQuestionSetId?: string; // Outdoor question set assignment
@@ -24,6 +25,7 @@ export interface CreateTeamRequest {
   teamCode: string;
   password: string;
   memberIds?: string[];
+  teamLeaderId?: string; // Team leader userId
   questionSetId?: string; // Legacy field
   indoorQuestionSetId?: string; // Indoor question set
   outdoorQuestionSetId?: string; // Outdoor question set
@@ -34,6 +36,7 @@ export interface UpdateTeamRequest {
   teamCode?: string;
   password?: string;
   memberIds?: string[];
+  teamLeaderId?: string; // Team leader userId
   questionSetId?: string; // Legacy field
   indoorQuestionSetId?: string; // Indoor question set
   outdoorQuestionSetId?: string; // Outdoor question set
@@ -95,6 +98,7 @@ export async function createTeam(request: CreateTeamRequest): Promise<Team> {
     teamCode: sanitizeString(request.teamCode),
     password: sanitizeString(request.password),
     memberIds: request.memberIds || [],
+    teamLeaderId: request.teamLeaderId || null,
     questionSetId: request.questionSetId || null,
     indoorQuestionSetId: request.indoorQuestionSetId || null,
     outdoorQuestionSetId: request.outdoorQuestionSetId || null,
@@ -113,6 +117,7 @@ export async function updateTeam(teamId: string, request: UpdateTeamRequest): Pr
   if (request.teamCode !== undefined) docData.teamCode = sanitizeString(request.teamCode);
   if (request.password !== undefined) docData.password = sanitizeString(request.password);
   if (request.memberIds !== undefined) docData.memberIds = request.memberIds;
+  if (request.teamLeaderId !== undefined) docData.teamLeaderId = request.teamLeaderId || null;
   if (request.questionSetId !== undefined) docData.questionSetId = request.questionSetId || null;
   if (request.indoorQuestionSetId !== undefined) docData.indoorQuestionSetId = request.indoorQuestionSetId || null;
   if (request.outdoorQuestionSetId !== undefined) docData.outdoorQuestionSetId = request.outdoorQuestionSetId || null;

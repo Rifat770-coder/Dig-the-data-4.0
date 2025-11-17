@@ -15,6 +15,7 @@ interface Question {
   set: string;
   question: string;
   correctAnswer: string;
+  alternativeAnswers?: string[];
   points: number;
 }
 
@@ -175,6 +176,7 @@ export default function OutdoorMissionPage() {
           set: doc.set as string,
           question: doc.question as string,
           correctAnswer: doc.correctAnswer as string,
+          alternativeAnswers: (doc.alternativeAnswers as string[]) || [],
           points: doc.points as number
         }));
 
@@ -226,7 +228,15 @@ export default function OutdoorMissionPage() {
     const normalizedUserAnswer = userAnswer.trim().toLowerCase();
     const normalizedCorrectAnswer = question.correctAnswer.trim().toLowerCase();
     
-    const isCorrect = normalizedUserAnswer === normalizedCorrectAnswer;
+    // Check if answer matches correct answer or any alternative answer
+    let isCorrect = normalizedUserAnswer === normalizedCorrectAnswer;
+    
+    // If not correct, check alternative answers
+    if (!isCorrect && question.alternativeAnswers && question.alternativeAnswers.length > 0) {
+      isCorrect = question.alternativeAnswers.some(
+        altAnswer => altAnswer.trim().toLowerCase() === normalizedUserAnswer
+      );
+    }
 
     // If incorrect, trigger error animation and clear input
     if (!isCorrect) {
@@ -440,7 +450,7 @@ export default function OutdoorMissionPage() {
                           {question.points} points
                         </span>
                       </div>
-                      <h3 className="text-xl font-semibold text-white leading-relaxed">
+                      <h3 className="text-xl font-semibold text-white leading-relaxed whitespace-pre-wrap break-words">
                         {question.question}
                       </h3>
                     </div>

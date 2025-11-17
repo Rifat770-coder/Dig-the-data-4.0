@@ -14,6 +14,7 @@ interface Question {
   id: string;
   question: string;
   correctAnswer: string; // Changed to string for text answers
+  alternativeAnswers?: string[]; // Array of alternative correct answers
   points: number;
   hint?: string; // Optional hint
 }
@@ -184,6 +185,7 @@ export default function IndoorMissionPage() {
           id: doc.$id,
           question: Array.isArray(doc.question) ? doc.question[0] : doc.question,
           correctAnswer: doc.correctAnswer as string,
+          alternativeAnswers: (doc.alternativeAnswers as string[]) || [],
           points: doc.points as number,
           hint: doc.hint && Array.isArray(doc.hint) && doc.hint.length > 0 ? doc.hint[0] : undefined
         }));
@@ -239,7 +241,15 @@ export default function IndoorMissionPage() {
     const normalizedUserAnswer = userAnswer.trim().toLowerCase();
     const normalizedCorrectAnswer = question.correctAnswer.trim().toLowerCase();
     
-    const isCorrect = normalizedUserAnswer === normalizedCorrectAnswer;
+    // Check if answer matches correct answer or any alternative answer
+    let isCorrect = normalizedUserAnswer === normalizedCorrectAnswer;
+    
+    // If not correct, check alternative answers
+    if (!isCorrect && question.alternativeAnswers && question.alternativeAnswers.length > 0) {
+      isCorrect = question.alternativeAnswers.some(
+        altAnswer => altAnswer.trim().toLowerCase() === normalizedUserAnswer
+      );
+    }
 
     // If incorrect, trigger error animation and clear input
     if (!isCorrect) {
@@ -518,7 +528,7 @@ export default function IndoorMissionPage() {
                           {question.points} points
                         </span>
                       </div>
-                      <h3 className="text-xl font-semibold text-white leading-relaxed">
+                      <h3 className="text-xl font-semibold text-white leading-relaxed whitespace-pre-wrap break-words">
                         {question.question}
                       </h3>
                     </div>
