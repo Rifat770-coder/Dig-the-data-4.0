@@ -137,7 +137,10 @@ export async function deleteTeam(teamId: string): Promise<void> {
 export async function getAllTeams(): Promise<Team[]> {
   try {
     const response = await safeAppwrite(
-      databases.listDocuments(DATABASE_ID, TEAMS_COLLECTION_ID, [Query.orderDesc('$createdAt')]),
+      databases.listDocuments(DATABASE_ID, TEAMS_COLLECTION_ID, [
+        Query.orderDesc('$createdAt'),
+        Query.limit(1000) // Increase limit to fetch all teams (default is 25)
+      ]),
       { operation: 'databases.listDocuments', collectionId: TEAMS_COLLECTION_ID, databaseId: DATABASE_ID }
     );
     const docs = (response as unknown as Models.DocumentList<Models.Document>).documents;
@@ -168,7 +171,8 @@ export async function getTeamsByScore(): Promise<Team[]> {
     const response = await safeAppwrite(
       databases.listDocuments(DATABASE_ID, TEAMS_COLLECTION_ID, [
         Query.orderDesc('score'),
-        Query.orderDesc('$createdAt')
+        Query.orderDesc('$createdAt'),
+        Query.limit(1000) // Increase limit to fetch all teams (default is 25)
       ]),
       { operation: 'databases.listDocuments', collectionId: TEAMS_COLLECTION_ID, databaseId: DATABASE_ID }
     );
