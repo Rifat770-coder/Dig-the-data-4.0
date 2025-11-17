@@ -19,6 +19,9 @@ function LoginContent() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [showResetModal, setShowResetModal] = useState<boolean>(false);
+  const [resetEmail, setResetEmail] = useState<string>('');
+  const [isResetting, setIsResetting] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -180,6 +183,62 @@ function LoginContent() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!resetEmail || !/\S+@\S+\.\S+/.test(resetEmail)) {
+      setMessage({
+        type: 'error',
+        text: 'Please enter a valid email address'
+      });
+      return;
+    }
+
+    setIsResetting(true);
+    setMessage(null);
+
+    try {
+      // Get the current URL origin for the reset link
+      const resetUrl = `${window.location.origin}/reset-password`;
+      
+      // Send password recovery email using Appwrite
+      await account.createRecovery(resetEmail, resetUrl);
+      
+      setMessage({
+        type: 'success',
+        text: 'Password reset link has been sent to your email. Please check your inbox.'
+      });
+      
+      // Close modal after successful request
+      setTimeout(() => {
+        setShowResetModal(false);
+        setResetEmail('');
+      }, 3000);
+      
+    } catch (error: unknown) {
+      console.error('[Password Reset] Error:', error);
+      
+      let errorMessage = 'Failed to send reset email. Please try again.';
+      
+      if ((error as { message?: string }).message) {
+        if ((error as { message?: string }).message?.includes('User not found')) {
+          errorMessage = 'No account found with this email address.';
+        } else if ((error as { message?: string }).message?.includes('Too many requests')) {
+          errorMessage = 'Too many reset attempts. Please try again later.';
+        } else {
+          errorMessage = (error as { message: string }).message;
+        }
+      }
+      
+      setMessage({
+        type: 'error',
+        text: errorMessage
+      });
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -351,6 +410,13 @@ function LoginContent() {
                   </label>
                 </div>
 
+                <button
+                  type="button"
+                  onClick={() => setShowResetModal(true)}
+                  className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors duration-300"
+                >
+                  Forgot password?
+                </button>
               </div>
 
               {/* Message Display */}
@@ -428,6 +494,111 @@ function LoginContent() {
           </div>
         </div>
       </div>
+
+      {/* Password Reset Modal */}
+      {showResetModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="glass-card p-8 rounded-2xl border border-cyan-500/20 shadow-2xl max-w-md w-full animate-in zoom-in duration-300">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-white">Reset Password</h3>
+              <button
+                onClick={() => {
+                  setShowResetModal(false);
+                  setResetEmail('');
+                  setMessage(null);
+                }}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <p className="text-gray-300 text-sm mb-6">
+              Enter your email address and we&apos;ll send you a link to reset your password.
+            </p>
+
+            <form onSubmit={handlePasswordReset} className="space-y-4">
+              <div>
+                <label htmlFor="reset-email" className="block text-sm font-medium text-gray-200 mb-2">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <input
+                    type="email"
+                    id="reset-email"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    className="modern-input pl-10"
+                    placeholder="your.email@example.com"
+                    required
+                  />
+                </div>
+              </div>
+
+              {message && (
+                <div className={`p-4 rounded-xl border ${
+                  message.type === 'success'
+                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                    : 'bg-red-500/10 text-red-400 border-red-500/20'
+                } flex items-center gap-2`}>
+                  {message.type === 'success' ? (
+                    <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  <span className="text-sm">{message.text}</span>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowResetModal(false);
+                    setResetEmail('');
+                    setMessage(null);
+                  }}
+                  className="flex-1 px-4 py-3 bg-gray-700 text-white rounded-xl hover:bg-gray-600 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isResetting}
+                  className="flex-1 modern-btn-primary relative overflow-hidden group"
+                >
+                  <div className="relative flex items-center justify-center gap-2">
+                    {isResetting ? (
+                      <>
+                        <div className="loading-spinner"></div>
+                        <span>Sending...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <span>Send Reset Link</span>
+                      </>
+                    )}
+                  </div>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

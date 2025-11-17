@@ -1,0 +1,392 @@
+'use client';
+
+import { useState, useEffect, Suspense } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { account } from '@/lib/appwrite';
+
+function ResetPasswordContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isVisible, setIsVisible] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [secret, setSecret] = useState<string | null>(null);
+
+  useEffect(() => {
+    setIsVisible(true);
+    
+    // Get userId and secret from URL parameters
+    const userIdParam = searchParams.get('userId');
+    const secretParam = searchParams.get('secret');
+    
+    if (!userIdParam || !secretParam) {
+      setMessage({
+        type: 'error',
+        text: 'Invalid or expired reset link. Please request a new password reset.'
+      });
+    } else {
+      setUserId(userIdParam);
+      setSecret(secretParam);
+    }
+  }, [searchParams]);
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!newPassword) {
+      newErrors.newPassword = 'Password is required';
+    } else if (newPassword.length < 8) {
+      newErrors.newPassword = 'Password must be at least 8 characters';
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
+      newErrors.newPassword = 'Password must contain uppercase, lowercase, and number';
+    }
+
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (newPassword !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm() || !userId || !secret) return;
+
+    setIsLoading(true);
+    setMessage(null);
+
+    try {
+      // Update password using Appwrite's updateRecovery method
+      await account.updateRecovery(
+        userId,
+        secret,
+        newPassword
+      );
+
+      setMessage({
+        type: 'success',
+        text: 'Password reset successful! Redirecting to login...'
+      });
+
+      // Redirect to login after 2 seconds
+      setTimeout(() => {
+        router.push('/login?registered=true');
+      }, 2000);
+
+    } catch (error: unknown) {
+      console.error('[Password Reset] Error:', error);
+      
+      let errorMessage = 'Failed to reset password. Please try again.';
+      
+      if ((error as { message?: string }).message) {
+        if ((error as { message?: string }).message?.includes('Invalid credentials')) {
+          errorMessage = 'Invalid or expired reset link. Please request a new password reset.';
+        } else if ((error as { message?: string }).message?.includes('Password')) {
+          errorMessage = 'Password does not meet requirements. Please use a stronger password.';
+        } else {
+          errorMessage = (error as { message: string }).message;
+        }
+      }
+      
+      setMessage({
+        type: 'error',
+        text: errorMessage
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0">
+        <Image
+          src="/20251018_003312.jpg"
+          alt="Background"
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-slate-800/90 to-slate-900/95"></div>
+      </div>
+
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+        <div className={`w-full max-w-md transition-all duration-1000 ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        }`}>
+          
+          {/* Logo Section */}
+          <div className="text-center mb-8">
+            <div className="flex justify-center items-center gap-4 mb-6">
+              <div className="relative group">
+                <Image
+                  src="/ncc logo new    ncc.png"
+                  alt="NITER Computer Club"
+                  width={60}
+                  height={60}
+                  className="rounded-2xl shadow-lg transition-transform duration-300 group-hover:scale-105"
+                />
+              </div>
+              <div className="relative group">
+                <Image
+                  src="/20251018_003312.jpg"
+                  alt="Dig The Data 4.0"
+                  width={60}
+                  height={60}
+                  className="rounded-2xl shadow-lg transition-transform duration-300 group-hover:scale-105"
+                />
+              </div>
+            </div>
+            <h1 className="text-3xl font-bold gradient-text mb-2">Reset Password</h1>
+            <p className="text-gray-300 text-sm">Enter your new password</p>
+          </div>
+
+          {/* Reset Password Form */}
+          <div className="glass-card p-8 rounded-2xl border border-white/10 shadow-2xl">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              
+              {/* New Password Field */}
+              <div className="space-y-2">
+                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-200">
+                  New Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="newPassword"
+                    value={newPassword}
+                    onChange={(e) => {
+                      setNewPassword(e.target.value);
+                      if (errors.newPassword) {
+                        setErrors(prev => ({ ...prev, newPassword: '' }));
+                      }
+                    }}
+                    className={`modern-input pl-10 pr-10 ${errors.newPassword ? 'border-red-500 focus:border-red-500' : ''}`}
+                    placeholder="••••••••"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300 transition-colors"
+                  >
+                    {showPassword ? (
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                {errors.newPassword && (
+                  <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {errors.newPassword}
+                  </p>
+                )}
+              </div>
+
+              {/* Confirm Password Field */}
+              <div className="space-y-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-200">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    id="confirmPassword"
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      if (errors.confirmPassword) {
+                        setErrors(prev => ({ ...prev, confirmPassword: '' }));
+                      }
+                    }}
+                    className={`modern-input pl-10 pr-10 ${errors.confirmPassword ? 'border-red-500 focus:border-red-500' : ''}`}
+                    placeholder="••••••••"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300 transition-colors"
+                  >
+                    {showConfirmPassword ? (
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {errors.confirmPassword}
+                  </p>
+                )}
+              </div>
+
+              {/* Password Requirements */}
+              <div className="bg-gray-700/30 border border-gray-600/50 rounded-lg p-4">
+                <p className="text-xs text-gray-400 mb-2 font-medium">Password must contain:</p>
+                <ul className="text-xs text-gray-400 space-y-1">
+                  <li className="flex items-center gap-2">
+                    <span className={newPassword.length >= 8 ? 'text-green-400' : 'text-gray-500'}>
+                      {newPassword.length >= 8 ? '✓' : '○'}
+                    </span>
+                    At least 8 characters
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className={/[A-Z]/.test(newPassword) ? 'text-green-400' : 'text-gray-500'}>
+                      {/[A-Z]/.test(newPassword) ? '✓' : '○'}
+                    </span>
+                    One uppercase letter
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className={/[a-z]/.test(newPassword) ? 'text-green-400' : 'text-gray-500'}>
+                      {/[a-z]/.test(newPassword) ? '✓' : '○'}
+                    </span>
+                    One lowercase letter
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className={/\d/.test(newPassword) ? 'text-green-400' : 'text-gray-500'}>
+                      {/\d/.test(newPassword) ? '✓' : '○'}
+                    </span>
+                    One number
+                  </li>
+                </ul>
+              </div>
+
+              {/* Message Display */}
+              {message && (
+                <div className={`p-4 rounded-xl border ${
+                  message.type === 'success'
+                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                    : 'bg-red-500/10 text-red-400 border-red-500/20'
+                } flex items-center gap-2`}>
+                  {message.type === 'success' ? (
+                    <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  <span className="text-sm">{message.text}</span>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isLoading || !userId || !secret}
+                className="modern-btn-primary w-full relative overflow-hidden group"
+              >
+                <div className="relative flex items-center justify-center gap-2">
+                  {isLoading ? (
+                    <>
+                      <div className="loading-spinner"></div>
+                      <span>Resetting Password...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>Reset Password</span>
+                    </>
+                  )}
+                </div>
+              </button>
+
+              {/* Back to Login Link */}
+              <div className="text-center pt-4 border-t border-gray-700/50">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors duration-300 font-medium group"
+                >
+                  <svg className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                  </svg>
+                  <span>Back to Login</span>
+                </Link>
+              </div>
+            </form>
+          </div>
+
+          {/* Back to Home */}
+          <div className="text-center mt-8">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-gray-400 hover:text-gray-300 transition-colors duration-300 text-sm group"
+            >
+              <svg className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+              </svg>
+              <span>Back to Home</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
+  );
+}

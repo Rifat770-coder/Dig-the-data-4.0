@@ -82,6 +82,7 @@ export default function AdminPage() {
   const [teamSearchTerm, setTeamSearchTerm] = useState('');
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('');
+  const [memberSearchTerm, setMemberSearchTerm] = useState('');
 
   // Admin password (in production, this should be environment variable)
   const ADMIN_PASSWORD = 'ncc-rifat';
@@ -204,6 +205,7 @@ export default function AdminPage() {
 
       setTeamSuccess('Team created successfully!');
       setShowCreateTeam(false);
+      setMemberSearchTerm('');
       setTeamForm({ 
         teamName: '', 
         teamCode: '', 
@@ -326,6 +328,7 @@ export default function AdminPage() {
 
   const startEditTeam = (team: Team) => {
     setEditingTeam(team);
+    setMemberSearchTerm('');
     setTeamForm({
       teamName: team.teamName,
       teamCode: team.teamCode,
@@ -342,6 +345,7 @@ export default function AdminPage() {
   const cancelTeamForm = () => {
     setShowCreateTeam(false);
     setEditingTeam(null);
+    setMemberSearchTerm('');
     setTeamForm({ 
       teamName: '', 
       teamCode: '', 
@@ -1350,7 +1354,7 @@ export default function AdminPage() {
                   onChange={(e) => setTeamForm(prev => ({ ...prev, indoorQuestionSetId: e.target.value }))}
                   className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
                 >
-                  <option value="">All Indoor Questions (No specific set)</option>
+                  <option value="">No Question Set (Team will see all questions)</option>
                   {questionSets.length > 0 ? (
                     questionSets.map((set) => (
                       <option key={set.$id} value={set.set}>
@@ -1363,7 +1367,7 @@ export default function AdminPage() {
                 </select>
                 <p className="text-xs text-gray-400 mt-1">
                   {questionSets.length > 0 
-                    ? `Select which indoor question set this team will see (${questionSets.length} set${questionSets.length !== 1 ? 's' : ''} available)` 
+                    ? `Select a specific indoor question set or leave as "No Question Set" to show all questions (${questionSets.length} set${questionSets.length !== 1 ? 's' : ''} available)` 
                     : 'Add indoor questions in the Indoor Questions page to create sets'}
                 </p>
               </div>
@@ -1384,7 +1388,7 @@ export default function AdminPage() {
                   onChange={(e) => setTeamForm(prev => ({ ...prev, outdoorQuestionSetId: e.target.value }))}
                   className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"
                 >
-                  <option value="">All Outdoor Questions (No specific set)</option>
+                  <option value="">No Question Set (Team will see all questions)</option>
                   {outdoorQuestionSets.length > 0 ? (
                     outdoorQuestionSets.map((set) => (
                       <option key={set.$id} value={set.set}>
@@ -1397,7 +1401,7 @@ export default function AdminPage() {
                 </select>
                 <p className="text-xs text-gray-400 mt-1">
                   {outdoorQuestionSets.length > 0 
-                    ? `Select which outdoor question set this team will see (${outdoorQuestionSets.length} set${outdoorQuestionSets.length !== 1 ? 's' : ''} available)` 
+                    ? `Select a specific outdoor question set or leave as "No Question Set" to show all questions (${outdoorQuestionSets.length} set${outdoorQuestionSets.length !== 1 ? 's' : ''} available)` 
                     : 'Add outdoor questions in the Outdoor Questions page to create sets'}
                 </p>
               </div>
@@ -1463,6 +1467,46 @@ export default function AdminPage() {
                   </label>
                 </div>
 
+                {/* Search Box for Members */}
+                {availableUsers && Array.isArray(availableUsers) && availableUsers.length > 0 && (
+                  <div className="mb-4">
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Search members by name, email, or department..."
+                        value={memberSearchTerm}
+                        onChange={(e) => setMemberSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 bg-gray-700/50 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition placeholder-gray-400"
+                      />
+                      {memberSearchTerm && (
+                        <button
+                          onClick={() => setMemberSearchTerm('')}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300 transition-colors"
+                        >
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    {memberSearchTerm && (
+                      <p className="text-xs text-gray-400 mt-2">
+                        {availableUsers.filter(user => 
+                          !teamForm?.memberIds?.includes(user.userId) &&
+                          (user.name.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
+                           user.email.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
+                           user.department.toLowerCase().includes(memberSearchTerm.toLowerCase()))
+                        ).length} member(s) found
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {!availableUsers || !Array.isArray(availableUsers) || availableUsers.length === 0 ? (
                   <div className="text-center py-8 bg-gray-700/30 rounded-lg border border-gray-600/50">
                     <svg className="w-12 h-12 text-gray-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1479,8 +1523,18 @@ export default function AdminPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto p-4 bg-gray-700/20 rounded-lg border border-gray-600/50">
                     {availableUsers
                       .filter(user => !teamForm?.memberIds?.includes(user.userId))
+                      .filter(user => {
+                        // Apply search filter
+                        if (!memberSearchTerm) return true;
+                        const searchLower = memberSearchTerm.toLowerCase();
+                        return (
+                          user.name.toLowerCase().includes(searchLower) ||
+                          user.email.toLowerCase().includes(searchLower) ||
+                          user.department.toLowerCase().includes(searchLower)
+                        );
+                      })
                       .map((user) => {
-                      // Show only users that are NOT already selected
+                      // Show only users that are NOT already selected and match search
                       
                       return (
                         <div
@@ -1503,6 +1557,31 @@ export default function AdminPage() {
                         </div>
                       );
                     })}
+                    {availableUsers
+                      .filter(user => !teamForm?.memberIds?.includes(user.userId))
+                      .filter(user => {
+                        if (!memberSearchTerm) return true;
+                        const searchLower = memberSearchTerm.toLowerCase();
+                        return (
+                          user.name.toLowerCase().includes(searchLower) ||
+                          user.email.toLowerCase().includes(searchLower) ||
+                          user.department.toLowerCase().includes(searchLower)
+                        );
+                      }).length === 0 && memberSearchTerm && (
+                      <div className="col-span-full text-center py-8">
+                        <svg className="w-12 h-12 text-gray-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <p className="text-gray-400 font-medium mb-1">No members found</p>
+                        <p className="text-gray-500 text-sm">Try adjusting your search terms</p>
+                        <button
+                          onClick={() => setMemberSearchTerm('')}
+                          className="mt-3 text-cyan-400 hover:text-cyan-300 text-sm transition-colors"
+                        >
+                          Clear search
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
                 

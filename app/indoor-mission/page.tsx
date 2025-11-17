@@ -133,24 +133,42 @@ export default function IndoorMissionPage() {
     try {
       // Get team's indoor question set filter if team is logged in
       let questionSetFilter: string | null = null;
+      let hasNoSetAssigned = false;
+      
       if (currentTeamCode) {
         try {
           const team = await getTeamByCode(currentTeamCode);
-          if (team && team.indoorQuestionSetId) {
+          if (team && team.indoorQuestionSetId && team.indoorQuestionSetId.trim() !== '') {
             questionSetFilter = team.indoorQuestionSetId;
             console.log(`[Indoor Mission] Team ${currentTeamCode} assigned to indoor question set: ${questionSetFilter}`);
           } else {
-            console.log(`[Indoor Mission] Team ${currentTeamCode} has no specific indoor question set (showing all)`);
+            // Team has no question set assigned - should see NO questions
+            hasNoSetAssigned = true;
+            console.log(`[Indoor Mission] Team ${currentTeamCode} has no indoor question set assigned (showing no questions)`);
           }
         } catch (error) {
           console.error('Error fetching team indoor question set:', error);
         }
       }
 
+      // If team has no set assigned, return empty array immediately
+      if (hasNoSetAssigned) {
+        console.log(`[Indoor Mission] Returning 0 questions - team has no set assigned`);
+        setQuestions([]);
+        setTotalQuestions(0);
+        setLoading(false);
+        return [];
+      }
+
       // Build query with optional question set filter
       const queries = [Query.orderDesc('$createdAt')];
-      if (questionSetFilter) {
+      // Only filter by set if a specific set is assigned
+      if (questionSetFilter && questionSetFilter.trim() !== '') {
         queries.push(Query.equal('set', questionSetFilter));
+        console.log(`[Indoor Mission] Filtering questions by set: ${questionSetFilter}`);
+      } else {
+        // No team logged in - show all questions for individual players
+        console.log(`[Indoor Mission] No team logged in - showing all questions`);
       }
 
       // Fetch questions from Appwrite

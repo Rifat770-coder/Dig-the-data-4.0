@@ -116,19 +116,32 @@ export default function OutdoorMissionPage() {
     try {
       // Get team's outdoor question set filter if team is logged in
       let questionSetFilter: string | null = null;
+      let hasNoSetAssigned = false;
+      
       if (currentTeamCode) {
         try {
           const { getTeamByCode } = await import('@/lib/teams');
           const team = await getTeamByCode(currentTeamCode);
-          if (team && team.outdoorQuestionSetId) {
+          if (team && team.outdoorQuestionSetId && team.outdoorQuestionSetId.trim() !== '') {
             questionSetFilter = team.outdoorQuestionSetId;
             console.log(`[Outdoor Mission] Team ${currentTeamCode} assigned to outdoor question set: ${questionSetFilter}`);
           } else {
-            console.log(`[Outdoor Mission] Team ${currentTeamCode} has no specific outdoor question set (showing all)`);
+            // Team has no question set assigned - should see NO questions
+            hasNoSetAssigned = true;
+            console.log(`[Outdoor Mission] Team ${currentTeamCode} has no outdoor question set assigned (showing no questions)`);
           }
         } catch (error) {
           console.error('Error fetching team outdoor question set:', error);
         }
+      }
+
+      // If team has no set assigned, return empty array immediately
+      if (hasNoSetAssigned) {
+        console.log(`[Outdoor Mission] Returning 0 questions - team has no set assigned`);
+        setQuestions([]);
+        setTotalQuestions(0);
+        setLoading(false);
+        return [];
       }
 
       // Fetch questions from Appwrite "outdoor" collection
@@ -139,8 +152,13 @@ export default function OutdoorMissionPage() {
         Query.orderAsc('$createdAt'),
         Query.limit(100)
       ];
-      if (questionSetFilter) {
+      // Only filter by set if a specific set is assigned
+      if (questionSetFilter && questionSetFilter.trim() !== '') {
         queries.push(Query.equal('set', questionSetFilter));
+        console.log(`[Outdoor Mission] Filtering questions by set: ${questionSetFilter}`);
+      } else {
+        // No team logged in - show all questions for individual players
+        console.log(`[Outdoor Mission] No team logged in - showing all questions`);
       }
       
       const response = await databases.listDocuments(
