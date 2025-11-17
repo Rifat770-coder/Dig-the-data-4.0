@@ -303,8 +303,18 @@ export default function AdminPage() {
         }
       });
       
-      // Filter out users who are already assigned to other teams
-      const availableUsers = allUsers.filter(user => !assignedUserIds.has(user.$id));
+      // When editing, include current team members in available users
+      // They should appear as selectable so they can be removed or kept
+      let currentTeamMemberIds = new Set<string>();
+      if (editingTeam && editingTeam.memberIds && Array.isArray(editingTeam.memberIds)) {
+        currentTeamMemberIds = new Set(editingTeam.memberIds);
+      }
+      
+      // Filter: show users that are either (a) not assigned to any team, 
+      // or (b) are members of the team being edited
+      const availableUsers = allUsers.filter(user => 
+        !assignedUserIds.has(user.userId) || currentTeamMemberIds.has(user.userId)
+      );
       
       setAvailableUsers(availableUsers);
     } catch (err) {
@@ -1392,11 +1402,64 @@ export default function AdminPage() {
                 </p>
               </div>
 
+              {/* Currently Assigned Members Section */}
+              {teamForm?.memberIds && teamForm.memberIds.length > 0 && (
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="block text-sm font-medium text-cyan-300">
+                      Currently Assigned Team Members ({teamForm.memberIds.length})
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
+                    {users
+                      .filter(user => teamForm.memberIds.includes(user.userId))
+                      .map((user) => (
+                        <div
+                          key={user.$id}
+                          className="p-4 rounded-lg border bg-cyan-500/20 border-cyan-500/50 text-cyan-300 relative"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => toggleMemberSelection(user.userId)}
+                            className="absolute top-2 right-2 p-1 bg-red-500/80 hover:bg-red-600 rounded-full transition-colors"
+                            title="Remove from team"
+                          >
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                          <div className="flex items-center gap-3 pr-6">
+                            <div className="w-5 h-5 rounded border-2 bg-cyan-500 border-cyan-500 flex items-center justify-center flex-shrink-0">
+                              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{user.name}</p>
+                              <p className="text-xs opacity-75 truncate">{user.email}</p>
+                              <p className="text-xs opacity-60">{user.department}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    {users.filter(user => teamForm.memberIds.includes(user.userId)).length === 0 && (
+                      <div className="col-span-full text-center py-4 text-gray-400">
+                        <p className="text-sm">Member details loading... ({teamForm.memberIds.length} member IDs assigned)</p>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Click the ✕ button to remove a member from this team
+                  </p>
+                </div>
+              )}
+
               {/* Member Selection */}
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <label className="block text-sm font-medium text-cyan-300">
-                    Select Team Members ({teamForm?.memberIds?.length || 0} selected)
+                    {teamForm?.memberIds && teamForm.memberIds.length > 0 ? 'Add More Team Members' : 'Select Team Members'} 
+                    {!teamForm?.memberIds || teamForm.memberIds.length === 0 ? ` (${teamForm?.memberIds?.length || 0} selected)` : ''}
                   </label>
                 </div>
 
@@ -1405,36 +1468,31 @@ export default function AdminPage() {
                     <svg className="w-12 h-12 text-gray-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    <p className="text-gray-400 font-medium mb-1">No available users</p>
-                    <p className="text-gray-500 text-sm">All users are already assigned to other teams</p>
+                    <p className="text-gray-400 font-medium mb-1">No available users to add</p>
+                    <p className="text-gray-500 text-sm">
+                      {teamForm?.memberIds?.length ? 
+                        'All available users are already assigned. Your current team members are saved.' : 
+                        'All users are already assigned to other teams'}
+                    </p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto p-4 bg-gray-700/20 rounded-lg border border-gray-600/50">
-                    {availableUsers.map((user) => {
-                      // Use custom userId (not Appwrite document ID) for team memberIds
-                      const isSelected = teamForm?.memberIds?.includes(user.userId) || false;
+                    {availableUsers
+                      .filter(user => !teamForm?.memberIds?.includes(user.userId))
+                      .map((user) => {
+                      // Show only users that are NOT already selected
                       
                       return (
                         <div
                           key={user.$id}
-                          className={`p-4 rounded-lg border cursor-pointer transition-all duration-300 ${
-                            isSelected
-                              ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300'
-                              : 'bg-gray-600/30 border-gray-500/50 text-gray-300 hover:bg-gray-600/50 hover:border-gray-400/50'
-                          }`}
+                          className="p-4 rounded-lg border cursor-pointer transition-all duration-300 bg-gray-600/30 border-gray-500/50 text-gray-300 hover:bg-gray-600/50 hover:border-cyan-400/50"
                           onClick={() => toggleMemberSelection(user.userId)}
                         >
                           <div className="flex items-center gap-3">
-                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                              isSelected 
-                                ? 'bg-cyan-500 border-cyan-500' 
-                                : 'border-gray-400'
-                            }`}>
-                              {isSelected && (
-                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                              )}
+                            <div className="w-5 h-5 rounded border-2 border-gray-400 flex items-center justify-center">
+                              <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                              </svg>
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="font-medium truncate">{user.name}</p>
@@ -1447,8 +1505,25 @@ export default function AdminPage() {
                     })}
                   </div>
                 )}
+                
+                {/* Show currently selected members count and info */}
+                {teamForm?.memberIds?.length > 0 && availableUsers.length === 0 && (
+                  <div className="mt-3 p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
+                    <p className="text-sm text-cyan-300">
+                      <span className="font-semibold">{teamForm.memberIds.length} member{teamForm.memberIds.length !== 1 ? 's' : ''}</span> currently assigned to this team
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      No additional users available to add at this time
+                    </p>
+                  </div>
+                )}
+                
                 <p className="text-xs text-gray-400 mt-2">
-                  Select team members - You can select multiple members
+                  {availableUsers.filter(user => !teamForm?.memberIds?.includes(user.userId)).length > 0 ? 
+                    'Click on users to add them as team members' : 
+                    teamForm?.memberIds?.length > 0 ?
+                    'All available users have been added. Use the section above to remove members if needed.' :
+                    'No users available to add'}
                 </p>
               </div>
 
