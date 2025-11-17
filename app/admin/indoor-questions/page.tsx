@@ -69,7 +69,10 @@ export default function AdminQuestionsPage() {
       const response = await databases.listDocuments(
         DATABASE_ID,
         QUESTION_SET_COLLECTION_ID,
-        [Query.orderDesc('$createdAt')]
+        [
+          Query.orderDesc('$createdAt'),
+          Query.limit(1000) // Increase limit to fetch all questions (default is 25)
+        ]
       );
       setQuestions(response.documents as unknown as QuestionSet[]);
     } catch (error) {

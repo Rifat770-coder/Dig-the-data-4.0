@@ -69,7 +69,10 @@ export default function AdminOutdoorQuestionsPage() {
       const response = await databases.listDocuments(
         DATABASE_ID,
         OUTDOOR_QUESTION_COLLECTION_ID,
-        [Query.orderDesc('$createdAt')]
+        [
+          Query.orderDesc('$createdAt'),
+          Query.limit(1000) // Increase limit to fetch all questions (default is 25)
+        ]
       );
       setQuestions(response.documents as unknown as OutdoorQuestionSet[]);
     } catch (error) {
