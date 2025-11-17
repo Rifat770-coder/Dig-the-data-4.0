@@ -95,9 +95,9 @@ export async function createTeam(request: CreateTeamRequest): Promise<Team> {
     teamCode: sanitizeString(request.teamCode),
     password: sanitizeString(request.password),
     memberIds: request.memberIds || [],
-    questionSetId: request.questionSetId || undefined,
-    indoorQuestionSetId: request.indoorQuestionSetId || undefined,
-    outdoorQuestionSetId: request.outdoorQuestionSetId || undefined,
+    questionSetId: request.questionSetId || null,
+    indoorQuestionSetId: request.indoorQuestionSetId || null,
+    outdoorQuestionSetId: request.outdoorQuestionSetId || null,
   };
   const created = await safeAppwrite(
     databases.createDocument(DATABASE_ID, TEAMS_COLLECTION_ID, ID.unique(), docData),
@@ -113,9 +113,9 @@ export async function updateTeam(teamId: string, request: UpdateTeamRequest): Pr
   if (request.teamCode !== undefined) docData.teamCode = sanitizeString(request.teamCode);
   if (request.password !== undefined) docData.password = sanitizeString(request.password);
   if (request.memberIds !== undefined) docData.memberIds = request.memberIds;
-  if (request.questionSetId !== undefined) docData.questionSetId = request.questionSetId || undefined;
-  if (request.indoorQuestionSetId !== undefined) docData.indoorQuestionSetId = request.indoorQuestionSetId || undefined;
-  if (request.outdoorQuestionSetId !== undefined) docData.outdoorQuestionSetId = request.outdoorQuestionSetId || undefined;
+  if (request.questionSetId !== undefined) docData.questionSetId = request.questionSetId || null;
+  if (request.indoorQuestionSetId !== undefined) docData.indoorQuestionSetId = request.indoorQuestionSetId || null;
+  if (request.outdoorQuestionSetId !== undefined) docData.outdoorQuestionSetId = request.outdoorQuestionSetId || null;
   if (request.score !== undefined) docData.score = request.score;
   if (request.indoorScore !== undefined) docData.indoorScore = request.indoorScore;
   if (request.outdoorScore !== undefined) docData.outdoorScore = request.outdoorScore;

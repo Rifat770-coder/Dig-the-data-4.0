@@ -122,7 +122,7 @@ export default function OutdoorMissionPage() {
         try {
           const { getTeamByCode } = await import('@/lib/teams');
           const team = await getTeamByCode(currentTeamCode);
-          if (team && team.outdoorQuestionSetId && team.outdoorQuestionSetId.trim() !== '') {
+          if (team && team.outdoorQuestionSetId && String(team.outdoorQuestionSetId).trim() !== '') {
             questionSetFilter = team.outdoorQuestionSetId;
             console.log(`[Outdoor Mission] Team ${currentTeamCode} assigned to outdoor question set: ${questionSetFilter}`);
           } else {

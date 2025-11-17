@@ -138,7 +138,7 @@ export default function IndoorMissionPage() {
       if (currentTeamCode) {
         try {
           const team = await getTeamByCode(currentTeamCode);
-          if (team && team.indoorQuestionSetId && team.indoorQuestionSetId.trim() !== '') {
+          if (team && team.indoorQuestionSetId && String(team.indoorQuestionSetId).trim() !== '') {
             questionSetFilter = team.indoorQuestionSetId;
             console.log(`[Indoor Mission] Team ${currentTeamCode} assigned to indoor question set: ${questionSetFilter}`);
           } else {
