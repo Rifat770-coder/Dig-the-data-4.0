@@ -339,17 +339,17 @@ export default function OutdoorMissionPage() {
       {/* Header */}
       <div className="bg-gray-900/95 backdrop-blur-sm border-b border-cyan-500/20 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
               <Link
                 href="/game-interface"
-                className="flex items-center gap-2 text-gray-300 hover:text-cyan-400 transition-colors"
+                className="flex items-center gap-2 text-gray-300 hover:text-cyan-400 transition-colors text-sm sm:text-base"
               >
-                <ArrowLeft className="w-5 h-5" />
-                <span>Back to Game</span>
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="whitespace-nowrap">Back to Game</span>
               </Link>
-              <div className="h-6 w-px bg-gray-700"></div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              <div className="h-6 w-px bg-gray-700 hidden sm:block"></div>
+              <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                 Outdoor Mission
               </h1>
             </div>
@@ -357,8 +357,8 @@ export default function OutdoorMissionPage() {
             <div className="flex items-center gap-4">
               {isTeamLoggedIn && teamCode && (
                 <div className="text-right">
-                  <div className="text-sm text-gray-400">Team</div>
-                  <div className="text-sm font-bold text-yellow-400 font-mono">{teamCode}</div>
+                  <div className="text-xs sm:text-sm text-gray-400">Team</div>
+                  <div className="text-xs sm:text-sm font-bold text-yellow-400 font-mono">{teamCode}</div>
                 </div>
               )}
             </div>
@@ -369,14 +369,14 @@ export default function OutdoorMissionPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Mission Brief */}
-        <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-2xl p-6 mb-8">
-          <div className="flex items-start gap-4">
+        <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-2xl p-4 sm:p-6 mb-8">
+          <div className="flex flex-col sm:flex-row items-start gap-4">
             <div className="bg-cyan-500/20 p-3 rounded-lg">
-              <MapPin className="w-6 h-6 text-cyan-400" />
+              <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400" />
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-white mb-2">Mission Objective</h2>
-              <p className="text-gray-300 leading-relaxed">
+              <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Mission Objective</h2>
+              <p className="text-sm sm:text-base text-gray-300 leading-relaxed">
                 Welcome to the Outdoor Mission! Explore the real world, find clues, and answer the questions based on your observations. 
                 Type your answers in the text boxes below. Each correct answer earns you points. 
                 Once you submit a correct answer, the box will turn 
@@ -385,8 +385,8 @@ export default function OutdoorMissionPage() {
               </p>
               {isTeamLoggedIn && teamCode && (
                 <div className="mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                  <p className="text-green-300 text-sm flex items-center gap-2">
-                    <span className="text-lg">✓</span>
+                  <p className="text-green-300 text-xs sm:text-sm flex items-start sm:items-center gap-2">
+                    <span className="text-lg flex-shrink-0">✓</span>
                     <span>
                       <strong>Team Mode Active:</strong> Your points are being automatically added to team <strong className="font-mono">{teamCode}</strong>&apos;s leaderboard score!
                     </span>
@@ -437,28 +437,28 @@ export default function OutdoorMissionPage() {
               return (
                 <div
                   key={question.id}
-                  className={`backdrop-blur-xl border rounded-2xl p-6 transition-all duration-500 ${getAnswerBoxClass(question.id)}`}
+                  className={`backdrop-blur-xl border rounded-2xl p-4 sm:p-6 transition-all duration-500 ${getAnswerBoxClass(question.id)}`}
                 >
                   {/* Question Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="bg-cyan-500/20 text-cyan-400 px-3 py-1 rounded-full text-sm font-semibold">
+                  <div className="flex items-start justify-between mb-4 gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                        <span className="bg-cyan-500/20 text-cyan-400 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap">
                           Question {index + 1}
                         </span>
-                        <span className="text-gray-400 text-sm">
+                        <span className="text-gray-400 text-xs sm:text-sm whitespace-nowrap">
                           {question.points} points
                         </span>
                       </div>
-                      <h3 className="text-xl font-semibold text-white leading-relaxed whitespace-pre-wrap break-words">
+                      <h3 className="text-base sm:text-xl font-semibold text-white leading-relaxed whitespace-pre-wrap break-words">
                         {question.question}
                       </h3>
                     </div>
                     
                     {/* Status Icon */}
                     {isCorrect && (
-                      <div className="ml-4">
-                        <CheckCircle2 className="w-8 h-8 text-green-400" />
+                      <div className="ml-2 sm:ml-4 flex-shrink-0">
+                        <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-green-400" />
                       </div>
                     )}
                   </div>
@@ -486,11 +486,11 @@ export default function OutdoorMissionPage() {
 
                   {/* Action Buttons */}
                   {!isCorrect && (
-                    <div className="flex gap-3">
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <button
                         onClick={() => handleSubmitAnswer(question.id)}
                         disabled={!userAnswer.trim()}
-                        className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${
+                        className={`flex-1 py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl font-semibold transition-all duration-300 text-sm sm:text-base ${
                           userAnswer.trim()
                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-400 hover:to-blue-400 hover:shadow-lg hover:shadow-cyan-500/25'
                             : 'bg-gray-700 text-gray-500 cursor-not-allowed'

@@ -414,17 +414,17 @@ export default function IndoorMissionPage() {
       {/* Header */}
       <div className="bg-gray-900/95 backdrop-blur-sm border-b border-cyan-500/20 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
               <Link
                 href="/game-interface"
-                className="flex items-center gap-2 text-gray-300 hover:text-cyan-400 transition-colors"
+                className="flex items-center gap-2 text-gray-300 hover:text-cyan-400 transition-colors text-sm sm:text-base"
               >
-                <ArrowLeft className="w-5 h-5" />
-                <span>Back to Game</span>
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="whitespace-nowrap">Back to Game</span>
               </Link>
-              <div className="h-6 w-px bg-gray-700"></div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              <div className="h-6 w-px bg-gray-700 hidden sm:block"></div>
+              <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                 Indoor Mission
               </h1>
             </div>
@@ -432,8 +432,8 @@ export default function IndoorMissionPage() {
             <div className="flex items-center gap-4">
               {isTeamLoggedIn && teamCode && (
                 <div className="text-right">
-                  <div className="text-sm text-gray-400">Team</div>
-                  <div className="text-sm font-bold text-yellow-400 font-mono">{teamCode}</div>
+                  <div className="text-xs sm:text-sm text-gray-400">Team</div>
+                  <div className="text-xs sm:text-sm font-bold text-yellow-400 font-mono">{teamCode}</div>
                 </div>
               )}
              
@@ -445,14 +445,14 @@ export default function IndoorMissionPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Mission Brief */}
-        <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-2xl p-6 mb-8">
-          <div className="flex items-start gap-4">
+        <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-2xl p-4 sm:p-6 mb-8">
+          <div className="flex flex-col sm:flex-row items-start gap-4">
             <div className="bg-cyan-500/20 p-3 rounded-lg">
-              <Lightbulb className="w-6 h-6 text-cyan-400" />
+              <Lightbulb className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400" />
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-white mb-2">Mission Objective</h2>
-              <p className="text-gray-300 leading-relaxed">
+              <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Mission Objective</h2>
+              <p className="text-sm sm:text-base text-gray-300 leading-relaxed">
                 Welcome to the Indoor Mission! Type your answers in the text boxes below to test your knowledge and skills. 
                 Each correct answer earns you points. Use the <span className="text-yellow-400 font-semibold">Hint</span> button if you need help, 
                 but be aware that using a hint will <span className="text-red-400 font-semibold">deduct 2 points</span> from your score. 
@@ -515,35 +515,35 @@ export default function IndoorMissionPage() {
               return (
                 <div
                   key={question.id}
-                  className={`backdrop-blur-xl border rounded-2xl p-6 transition-all duration-500 ${getAnswerBoxClass(question.id)}`}
+                  className={`backdrop-blur-xl border rounded-2xl p-4 sm:p-6 transition-all duration-500 ${getAnswerBoxClass(question.id)}`}
                 >
                   {/* Question Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="bg-cyan-500/20 text-cyan-400 px-3 py-1 rounded-full text-sm font-semibold">
+                  <div className="flex items-start justify-between mb-4 gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                        <span className="bg-cyan-500/20 text-cyan-400 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap">
                           Question {index + 1}
                         </span>
-                        <span className="text-gray-400 text-sm">
+                        <span className="text-gray-400 text-xs sm:text-sm whitespace-nowrap">
                           {question.points} points
                         </span>
                       </div>
-                      <h3 className="text-xl font-semibold text-white leading-relaxed whitespace-pre-wrap break-words">
+                      <h3 className="text-base sm:text-xl font-semibold text-white leading-relaxed whitespace-pre-wrap break-words">
                         {question.question}
                       </h3>
                     </div>
                     
                     {/* Status Icon */}
                     {isCorrect && (
-                      <div className="ml-4">
-                        <CheckCircle2 className="w-8 h-8 text-green-400" />
+                      <div className="ml-2 sm:ml-4 flex-shrink-0">
+                        <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-green-400" />
                       </div>
                     )}
                   </div>
 
                   {/* Answer Input Box */}
                   <div className="mb-4">
-                    <label className="block text-gray-300 text-sm font-medium mb-2">
+                    <label className="block text-gray-300 text-xs sm:text-sm font-medium mb-2">
                       Your Answer:
                     </label>
                     <input
@@ -552,7 +552,7 @@ export default function IndoorMissionPage() {
                       onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                       disabled={isCorrect}
                       placeholder="Type your answer here..."
-                      className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 ${
+                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 text-sm sm:text-base ${
                         isCorrect
                           ? 'bg-green-900/20 border-green-500 text-green-300 cursor-not-allowed'
                           : errorShake[question.id]
@@ -564,12 +564,12 @@ export default function IndoorMissionPage() {
 
                   {/* Hint Display */}
                   {hintShown && question.hint && !isCorrect && (
-                    <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+                    <div className="mb-4 p-2.5 sm:p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
                       <div className="flex items-start gap-2">
-                        <Lightbulb className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-yellow-400 font-medium text-sm mb-1">Hint:</p>
-                          <p className="text-gray-300 text-sm">{question.hint}</p>
+                        <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-yellow-400 font-medium text-xs sm:text-sm mb-1">Hint:</p>
+                          <p className="text-gray-300 text-xs sm:text-sm break-words">{question.hint}</p>
                         </div>
                       </div>
                     </div>
@@ -577,11 +577,11 @@ export default function IndoorMissionPage() {
 
                   {/* Action Buttons */}
                   {!isCorrect && (
-                    <div className="flex gap-3">
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <button
                         onClick={() => handleSubmitAnswer(question.id)}
                         disabled={!userAnswer.trim()}
-                        className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${
+                        className={`flex-1 py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl font-semibold transition-all duration-300 text-sm sm:text-base ${
                           userAnswer.trim()
                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-400 hover:to-blue-400 hover:shadow-lg hover:shadow-cyan-500/25'
                             : 'bg-gray-700 text-gray-500 cursor-not-allowed'
@@ -593,10 +593,10 @@ export default function IndoorMissionPage() {
                       {question.hint && !hintShown && (
                         <button
                           onClick={() => handleShowHint(question.id)}
-                          className="px-6 py-3 rounded-xl font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30 transition-all duration-300"
+                          className="px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30 transition-all duration-300 text-sm sm:text-base flex items-center justify-center gap-2"
                         >
-                          <Lightbulb className="w-4 h-4 inline-block mr-2" />
-                          Hint
+                          <Lightbulb className="w-4 h-4" />
+                          <span>Hint (-2 pts)</span>
                         </button>
                       )}
                     </div>
