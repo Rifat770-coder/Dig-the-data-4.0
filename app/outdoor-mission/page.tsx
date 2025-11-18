@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { CheckCircle2, Clock, Award, ArrowLeft, MapPin } from 'lucide-react';
 import { getTeamSession, isTeamSessionValid } from '@/lib/auth-api';
 import { syncTeamScoreToAppwrite } from '@/lib/score-sync';
-import { databases, DATABASE_ID } from '@/lib/appwrite';
+import { databases, DATABASE_ID, client } from '@/lib/appwrite';
 import { Query } from 'appwrite';
+
+const TEAM_ANSWERS_COLLECTION_ID = 'team-answers';
 
 // Question type definition matching Appwrite "outdoor" collection
 interface Question {
@@ -33,12 +35,91 @@ export default function OutdoorMissionPage() {
   const [answerStates, setAnswerStates] = useState<AnswerState>({});
   const [loading, setLoading] = useState(true);
   const [userAnswers, setUserAnswers] = useState<{ [key: string]: string }>({});
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [totalScore, setTotalScore] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [teamCode, setTeamCode] = useState<string | null>(null);
   const [isTeamLoggedIn, setIsTeamLoggedIn] = useState(false);
   const [errorShake, setErrorShake] = useState<{ [key: string]: boolean }>({});
+  let unsubscribe: (() => void) | null = null;
+
+  // Sync current answers to Appwrite for team sharing
+  const syncAnswersToAppwrite = async (currentTeamCode: string, answers: { [key: string]: string }) => {
+    if (!currentTeamCode) return;
+    
+    try {
+      const documentId = `${currentTeamCode}_outdoor`;
+      
+      // Try to update existing document, or create if doesn't exist
+      try {
+        await databases.updateDocument(
+          DATABASE_ID,
+          TEAM_ANSWERS_COLLECTION_ID,
+          documentId,
+          {
+            teamCode: currentTeamCode,
+            missionType: 'outdoor',
+            answers: JSON.stringify(answers),
+            updatedAt: new Date().toISOString()
+          }
+        );
+      } catch {
+        // Document doesn't exist, create it
+        await databases.createDocument(
+          DATABASE_ID,
+          TEAM_ANSWERS_COLLECTION_ID,
+          documentId,
+          {
+            teamCode: currentTeamCode,
+            missionType: 'outdoor',
+            answers: JSON.stringify(answers),
+            updatedAt: new Date().toISOString()
+          }
+        );
+      }
+    } catch (error) {
+      console.error('[Outdoor Sync] Error syncing answers to Appwrite:', error);
+    }
+  };
+
+  // Subscribe to realtime updates for team answers
+  const subscribeToTeamAnswers = (currentTeamCode: string) => {
+    if (!currentTeamCode) return;
+    
+    const documentId = `${currentTeamCode}_outdoor`;
+    
+    unsubscribe = client.subscribe(
+      `databases.${DATABASE_ID}.collections.${TEAM_ANSWERS_COLLECTION_ID}.documents.${documentId}`,
+      (response: { events: string[]; payload: { answers?: string } }) => {
+        console.log('[Outdoor Realtime] Received update:', response);
+        
+        if (response.events.includes('databases.*.collections.*.documents.*.update')) {
+          const payload = response.payload;
+          if (payload && payload.answers) {
+            try {
+              const remoteAnswers = JSON.parse(payload.answers);
+              
+              // Update local state with remote answers (but don't trigger another sync)
+              setUserAnswers(remoteAnswers);
+              
+              console.log('[Outdoor Realtime] Updated answers from team member:', remoteAnswers);
+            } catch (error) {
+              console.error('[Outdoor Realtime] Error parsing remote answers:', error);
+            }
+          }
+        }
+      }
+    );
+  };
+
+  // Unsubscribe from realtime updates
+  const unsubscribeFromTeamAnswers = () => {
+    if (unsubscribe) {
+      unsubscribe();
+      unsubscribe = null;
+    }
+  };
 
   const loadAnswerStates = (teamCodeParam?: string, questionsParam?: Question[]) => {
     try {
@@ -102,6 +183,9 @@ export default function OutdoorMissionPage() {
           try {
             console.log(`[Outdoor Mission] Initializing sync for team ${currentTeamCode}, current score: ${currentScore}`);
             await syncTeamScoreToAppwrite(currentTeamCode);
+            
+            // Subscribe to realtime updates for team answers
+            subscribeToTeamAnswers(currentTeamCode);
           } catch (error) {
             console.error('Error syncing initial score:', error);
           }
@@ -110,6 +194,13 @@ export default function OutdoorMissionPage() {
     };
     
     initializeGame();
+    
+    // Cleanup subscription on unmount
+    return () => {
+      if (teamCode) {
+        unsubscribeFromTeamAnswers();
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -209,10 +300,17 @@ export default function OutdoorMissionPage() {
       return;
     }
 
-    setUserAnswers(prev => ({
-      ...prev,
+    const newAnswers = {
+      ...userAnswers,
       [questionId]: answer
-    }));
+    };
+    
+    setUserAnswers(newAnswers);
+    
+    // Sync to Appwrite for team members to see in realtime
+    if (isTeamLoggedIn && teamCode) {
+      syncAnswersToAppwrite(teamCode, newAnswers);
+    }
   };
 
   const handleSubmitAnswer = async (questionId: string) => {

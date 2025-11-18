@@ -145,7 +145,7 @@ export default function AdminPage() {
       const response = await databases.listDocuments(
         DATABASE_ID,
         OUTDOOR_COLLECTION_ID,
-        [Query.orderAsc('$createdAt')]
+        [Query.limit(1000), Query.orderAsc('$createdAt')]
       );
       
       console.log('Fetched outdoor question sets:', response.documents);

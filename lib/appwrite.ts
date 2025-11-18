@@ -48,6 +48,9 @@ export const TEAM_MODE_COLLECTION_ID = 'Team-Mode';
 // Question Set collection for storing quiz questions
 export const QUESTION_SET_COLLECTION_ID = 'question-set';
 
+// Team Answers collection for real-time answer synchronization
+export const TEAM_ANSWERS_COLLECTION_ID = 'team-answers';
+
 // Storage configuration
 export const PROFILE_PICTURES_BUCKET_ID = 'profile-pictures'; // You'll create this bucket in Appwrite
 export const BKASH_RECEIPTS_BUCKET_ID = 'bkash-receipts'; // Bucket for bKash transaction photos

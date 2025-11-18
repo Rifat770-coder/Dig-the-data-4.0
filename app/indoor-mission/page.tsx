@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { CheckCircle2, Clock, Award, ArrowLeft, Lightbulb } from 'lucide-react';
 import { getTeamSession, isTeamSessionValid } from '@/lib/auth-api';
 import { syncTeamScoreToAppwrite } from '@/lib/score-sync';
-import { databases, DATABASE_ID, QUESTION_SET_COLLECTION_ID } from '@/lib/appwrite';
+import { databases, DATABASE_ID, QUESTION_SET_COLLECTION_ID, client } from '@/lib/appwrite';
 import { Query } from 'appwrite';
 import { getTeamByCode } from '@/lib/teams';
+
+const TEAM_ANSWERS_COLLECTION_ID = 'team-answers';
 
 // Question type definition
 interface Question {
@@ -42,6 +44,84 @@ export default function IndoorMissionPage() {
   const [showHintModal, setShowHintModal] = useState(false);
   const [pendingHintQuestionId, setPendingHintQuestionId] = useState<string | null>(null);
   const [errorShake, setErrorShake] = useState<{ [key: string]: boolean }>({});
+  let unsubscribe: (() => void) | null = null;
+
+  // Sync current answers to Appwrite for team sharing
+  const syncAnswersToAppwrite = async (currentTeamCode: string, answers: { [key: string]: string }) => {
+    if (!currentTeamCode) return;
+    
+    try {
+      const documentId = `${currentTeamCode}_indoor`;
+      
+      // Try to update existing document, or create if doesn't exist
+      try {
+        await databases.updateDocument(
+          DATABASE_ID,
+          TEAM_ANSWERS_COLLECTION_ID,
+          documentId,
+          {
+            teamCode: currentTeamCode,
+            missionType: 'indoor',
+            answers: JSON.stringify(answers),
+            updatedAt: new Date().toISOString()
+          }
+        );
+      } catch {
+        // Document doesn't exist, create it
+        await databases.createDocument(
+          DATABASE_ID,
+          TEAM_ANSWERS_COLLECTION_ID,
+          documentId,
+          {
+            teamCode: currentTeamCode,
+            missionType: 'indoor',
+            answers: JSON.stringify(answers),
+            updatedAt: new Date().toISOString()
+          }
+        );
+      }
+    } catch (error) {
+      console.error('[Indoor Sync] Error syncing answers to Appwrite:', error);
+    }
+  };
+
+  // Subscribe to realtime updates for team answers
+  const subscribeToTeamAnswers = (currentTeamCode: string) => {
+    if (!currentTeamCode) return;
+    
+    const documentId = `${currentTeamCode}_indoor`;
+    
+    unsubscribe = client.subscribe(
+      `databases.${DATABASE_ID}.collections.${TEAM_ANSWERS_COLLECTION_ID}.documents.${documentId}`,
+      (response: { events: string[]; payload: { answers?: string } }) => {
+        console.log('[Indoor Realtime] Received update:', response);
+        
+        if (response.events.includes('databases.*.collections.*.documents.*.update')) {
+          const payload = response.payload;
+          if (payload && payload.answers) {
+            try {
+              const remoteAnswers = JSON.parse(payload.answers);
+              
+              // Update local state with remote answers (but don't trigger another sync)
+              setUserAnswers(remoteAnswers);
+              
+              console.log('[Indoor Realtime] Updated answers from team member:', remoteAnswers);
+            } catch (error) {
+              console.error('[Indoor Realtime] Error parsing remote answers:', error);
+            }
+          }
+        }
+      }
+    );
+  };
+
+  // Unsubscribe from realtime updates
+  const unsubscribeFromTeamAnswers = () => {
+    if (unsubscribe) {
+      unsubscribe();
+      unsubscribe = null;
+    }
+  };
 
   const loadAnswerStates = (teamCodeParam?: string, questionsParam?: Question[]) => {
     try {
@@ -119,6 +199,9 @@ export default function IndoorMissionPage() {
           try {
             console.log(`[Indoor Mission] Initializing sync for team ${currentTeamCode}, current score: ${currentScore}`);
             await syncTeamScoreToAppwrite(currentTeamCode);
+            
+            // Subscribe to realtime updates for team answers
+            subscribeToTeamAnswers(currentTeamCode);
           } catch (error) {
             console.error('Error syncing initial score:', error);
           }
@@ -127,6 +210,13 @@ export default function IndoorMissionPage() {
     };
     
     initializeGame();
+    
+    // Cleanup subscription on unmount
+    return () => {
+      if (teamCode) {
+        unsubscribeFromTeamAnswers();
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -222,10 +312,17 @@ export default function IndoorMissionPage() {
       return;
     }
 
-    setUserAnswers(prev => ({
-      ...prev,
+    const newAnswers = {
+      ...userAnswers,
       [questionId]: answer
-    }));
+    };
+    
+    setUserAnswers(newAnswers);
+    
+    // Sync to Appwrite for team members to see in realtime
+    if (isTeamLoggedIn && teamCode) {
+      syncAnswersToAppwrite(teamCode, newAnswers);
+    }
   };
 
   const handleSubmitAnswer = async (questionId: string) => {
